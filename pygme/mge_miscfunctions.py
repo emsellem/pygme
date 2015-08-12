@@ -32,6 +32,7 @@ import os
 
 __version__ = '1.0.2 (14 August 2014)'
 
+# Version 1.0.3 : GaussHermite only returns the derived profile (1 array)
 # Version 1.0.2 : Changed some scaling and output
 # Version 1.0.1 : Removed imin imax
 # Version 1.0.0 : first extraction from pygme
@@ -434,31 +435,35 @@ def fit_ImageCenter(image=None, showfit=False) :
 
     return Xin, Yin, fitdata
 #-------------------------------------------------------------------------------------------------------------
-def GaussHermite(X=None, GH=None) :
-    if X is None :
-        X = np.linspace(-GH[2]*5. + GH[1], GH[2]*5. + GH[1],101)
+def GaussHermite(Vbin=None, GH=None) :
+    """ Returns the Gauss-Hermite function given 
+    a set of parameters given as an array GH (first three moments are flux, velocity and dispersion)
+    and the input sampling (velocities) Vbin
+    """
+    if Vbin is None :
+        Vbin = np.linspace(-GH[2]*5. + GH[1], GH[2]*5. + GH[1],101)
 
     degree = len(GH) - 1
     if degree < 2 :
         print "Error: no enough parameters here"
-        return X * 0.
+        return Vbin * 0.
     if GH[2] == 0. :
         print "Error: Sigma is 0!"
-        return X * 0.
-    XN = (X - GH[1]) / GH[2]
-    XN2 = XN * XN
+        return Vbin * 0.
+    VbinN = (Vbin - GH[1]) / GH[2]
+    VbinN2 = VbinN * VbinN
     
-    GH0 = (2. * XN2 - 1.0) / sqrt(2.)
-    GH1 = (2. * XN2 - 3.) * XN / sqrt(3.)
+    GH0 = (2. * VbinN2 - 1.0) / sqrt(2.)
+    GH1 = (2. * VbinN2 - 3.) * VbinN / sqrt(3.)
     GH2 = GH1
 
     var = 1.0
     for i in xrange(3, degree+1) :
         var += GH[i] * GH2
-        GH2 = (sqrt(2.) * GH1 * XN - GH0) / sqrt(i+1.0);
+        GH2 = (sqrt(2.) * GH1 * VbinN - GH0) / sqrt(i+1.0);
         GH0 = GH1;
         GH1 = GH2;
-    return X, GH[0] * var * exp(- XN2 / 2.) 
+    return GH[0] * var * exp(- VbinN2 / 2.) 
 
 def oldGaussHermite(Vbin, V, S, GH) :
     """

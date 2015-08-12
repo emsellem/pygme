@@ -9,7 +9,9 @@ This module requires :
 """
 import numpy as np
 
-__version__ = '1.0.4 (16 July 2014)'
+__version__ = '1.0.6 (5 August 2015)'
+# Version 1.0.6 - 5 August 2015 : - Using now a LOSVD class
+# Version 1.0.5 - 4 August 2015 : - Adding the coordinates for the LOSVDs
 # Version 1.0.4 : - Changed comp_moments output (now return X,Y too)
 # Version 1.0.3 : - Changed comp_moments and comp_losvd
 # Version 1.0.2 : - First cleaning for release of pygme
@@ -166,6 +168,21 @@ def comp_moments(x, y, val, weights=None,lim=[-1,1,-1,1],nXY=10):
     gridX, gridY = np.meshgrid(np.linspace(lim[0], lim[1], nXY[0]), np.linspace(lim[2], lim[3], nXY[1]))
     return (gridX, gridY, mat_mass, mat_vel, mat_sig)
 ############################################################
+
+############################################################
+# Small class for LOSVDs
+# Including the sampling in X, Y and V
+############################################################
+class LOSVD(object) :
+    """ Provide a class for LOSVDs
+    which includes the coordinates (X, Y, V)
+    """
+    def __init__(self, Xcoord=None, Ycoord=None, Vcoord=None, losvd=None) :
+        self.Xcoord = Xcoord
+        self.Ycoord = Ycoord
+        self.Vcoord = Vcoord
+        self.losvd = losvd
+
 def comp_losvd(x, y, v, weights=None, limXY=[-1,1,-1,1], nXY=10, limV=[-1000,1000], nV=10):
     """
     Calculate the first 2 velocity moments
@@ -191,13 +208,23 @@ def comp_losvd(x, y, v, weights=None, limXY=[-1,1,-1,1], nXY=10, limV=[-1000,100
         print "ERROR: dimension of n should be 1 or 2"
         return 0,0,0,0,0
 
+    ## Defining the bins
     binX = np.linspace(limXY[0], limXY[1], nXY[0]+1)
     binY = np.linspace(limXY[2], limXY[3], nXY[1]+1)
     binV = np.linspace(limV[0], limV[1], nV+1)
+    ## Defining the centres of each pixel
+    pixX = (binX[1:] + binX[0:-1]) / 2.
+    pixY = (binY[1:] + binY[0:-1]) / 2.
+    pixV = (binV[1:] + binV[0:-1]) / 2.
     
     sizeX = np.size(x)
-    sample = np.hstack((y.reshape(sizeX,1), x.reshape(sizeX,1), v.reshape(sizeX,1)))
+    sample = np.hstack((x.reshape(sizeX,1), y.reshape(sizeX,1), v.reshape(sizeX,1)))
+    ## Coordinates of the bins
+    #    coords = np.asarray(np.meshgrid(pixX, pixY, pixV, indexing='ij'))
 
-    # Return LOSVD and edges
-    return np.histogramdd(sample, bins=(binY,binX,binV), weights=weights)[0]
+    ## Deriving the LOSVDs via histograms
+    locLOSVD = np.histogramdd(sample, bins=(binX,binY,binV), weights=weights)[0]
+
+    # Return coordinates and LOSVD via the LOSVD class
+    return LOSVD(pixX, pixY, pixV, locLOSVD)
 ############################################################

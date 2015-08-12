@@ -1,18 +1,20 @@
-######################################################################################
-# fitGausHermite.py
-# This routine will create and fit Gauss-Hermite profiles using a simple description
-# with an input given array GH, which includes the amplitude, mean velocity, dispersion
-# (Gaussian) plus the higher order terms, h3, h4, h5, ...
-#
-# Many versions of such routines exist, but for such 1d profiles they should
-# provide similar results
-#
-# This programme includes 2 minimising schemes: one based on mpfit (as translated in python)
-# and one based on the scipy minimisation lmfit. Both provides similar (although not exactly identical)
-# results (which could be a precision issue, not an algorithm issue).
+""" This routine will create and fit Gauss-Hermite 
+profiles using a simple description with an input given array GH, which 
+includes the amplitude, mean velocity, dispersion (Gaussian) plus the higher 
+order terms, h3, h4, h5, ...
+
+Many versions of such routines exist, but for such 1d profiles they 
+should provide similar results
+
+This programme includes 2 minimising schemes: one based on mpfit 
+(as translated in python) and one based on the scipy minimisation lmfit. 
+Both provides similar (although not exactly identical) results (which could be a
+precision issue, not an algorithm issue).
+"""
 #####################################################################
 # VERSION of              fitGaussHermite
 # 
+# V.0.0.3    3 August 2015 - Changed call to GaussHermite
 # V.0.0.2   21 August 2013 - Some docstrings and formatting changes
 # V.0.0.1   16 Dec 2012 - Adaptation from the fitn1dgauss from pygme
 #
@@ -95,25 +97,25 @@ def _set_GHparameters(parlist, default, degGH) :
 ## -----------------------------------------------------------------------------------------
 def _fitGH_residuals_err(par, x, data, err) :
     """ Residual function for Gauss Hermite fit. Include Errors. """
-    return ((data.ravel() - GaussHermite(x, par)[1])/err.ravel())
+    return ((data.ravel() - GaussHermite(x, par))/err.ravel())
 ## -----------------------------------------------------------------------------------------
 ## Return the difference between a model and the data WITH ERRORS
 ## -----------------------------------------------------------------------------------------
 def _fitGH_chi2_err(par, x, data, err) :
     """ Sum of squares of residuals  function for Gauss Hermite fit. Include Errors. """
-    return np.sum(((data.ravel() - GaussHermite(x, par)[1])/err.ravel())**2)
+    return np.sum(((data.ravel() - GaussHermite(x, par))/err.ravel())**2)
 ## -----------------------------------------------------------------------------------------
 ## Return the difference between a model and the data
 ## -----------------------------------------------------------------------------------------
 def _fitGH_residuals(par, x, data) :
     """ Residual function for Gauss Hermite fit. No Errors. """
-    return (data.ravel() - GaussHermite(x, par)[1])
+    return (data.ravel() - GaussHermite(x, par))
 ## -----------------------------------------------------------------------------------------
 ## Return the difference between a model and the data
 ## -----------------------------------------------------------------------------------------
 def _fitGH_chi2(par, x, data) :
     """ Sum of squares of residuals function for Gauss Hermite fit. No Errors. """
-    return np.sum((data.ravel() - GaussHermite(x, par)[1])**2)
+    return np.sum((data.ravel() - GaussHermite(x, par))**2)
 
 ## -----------------------------------------------------------------------------------------
 ## Return the two first moments of a 1D profile
@@ -254,7 +256,7 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     ## -------------------------------------------------------------------------------------
     def mpfitfun(p, fjac=None, x=None, err=None, data=None):
         GH = np.concatenate(([1.0], p))
-        ufit = GaussHermite(x, GH)[1]
+        ufit = GaussHermite(x, GH)
         GH[0] = _Solve_Amplitude(data, ufit, err)
         if err is None : 
             return [0, _fitGH_residuals(GH, x, data)]
@@ -293,7 +295,7 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     ## Recompute the best amplitudes to output the right parameters
     ## And renormalising them
     GH = np.concatenate(([1.0], result.params))
-    ufit = GaussHermite(xax, GH)[1]
+    ufit = GaussHermite(xax, GH)
     Iamp = _Solve_Amplitude(data, ufit, err)
     Ibestpar_array = np.concatenate(([Iamp], result.params))
 
@@ -313,7 +315,7 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
 
         print "Chi2: ",result.fnorm," Reduced Chi2: ",result.fnorm/len(data)
 
-    return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)[1]
+    return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)
    
 ################################################################################
 # LMFIT version of the Gauss Hermite fitting routine
@@ -429,7 +431,7 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
         """
         p = _extract_GH_params(pars, parnames)
         GH = np.concatenate(([1.0], p))
-        ufit = GaussHermite(x, GH)[1]
+        ufit = GaussHermite(x, GH)
         GH[0] = _Solve_Amplitude(data, ufit, err)
         if err is None : 
             res = _fitGH_residuals(GH, x, data)
@@ -477,7 +479,7 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     ## And renormalising them
     p = _extract_GH_params(result.params, parnames)
     GH = np.concatenate(([1.0], p))
-    ufit = GaussHermite(xax, GH)[1]
+    ufit = GaussHermite(xax, GH)
     Iamp = _Solve_Amplitude(data, ufit, err)
     Ibestpar_array = np.concatenate(([Iamp], p))
 
@@ -494,7 +496,7 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
 
         print "Chi2: ",result.chisqr," Reduced Chi2: ",result.redchi
 
-    return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)[1]
+    return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)
    
 ################################################################################
 # LMFIT version of the multigauss 1D fitting routine

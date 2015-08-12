@@ -7,6 +7,9 @@
 #
 #
 # -----------------------------------------------------------------------------
+# Version 0.0.5 - August 2015 - Change np.average to np.ma.average to avoid Zero
+#                               Error message 
+# Version 0.0.4 - August 2015 - Added the use of griddata and masks as an option
 # Version 0.0.3 - April 2015 - Fixed small bug in the type of data
 # Version 0.0.2
 # Copyright (C) 2011  Eric Emsellem
@@ -100,7 +103,7 @@ def guess_regular_grid(xnodes, ynodes, pixelsize=None) :
 
     return xunb, yunb
 
-def derive_unbinned_field(xnodes, ynodes, data, xunb=None, yunb=None, mask_array=None) :
+def derive_unbinned_field(xnodes, ynodes, data, xunb=None, yunb=None, mask=None, scipy=True) :
     """
        Provide an array of the same shape as the input xunb, and yunb
        with the values derived from the Voronoi binned data
@@ -109,7 +112,8 @@ def derive_unbinned_field(xnodes, ynodes, data, xunb=None, yunb=None, mask_array
        data : values for each node
        xunb, yunb: x and y coordinates of the unbinned data
                  if not provided (default) they will be guessed from the nodes
-       mask_array: array with the same shape than xunb providing mask values for positions to ignore
+       mask: array with the same shape than xunb providing mask values for positions to ignore
+       scipy: by default using scipy.griddata. If not True, using a loop on bins.
 
        Return: xunb, yunb, and unbinned_data arrays with the same shape as xunb,
     """
@@ -120,10 +124,32 @@ def derive_unbinned_field(xnodes, ynodes, data, xunb=None, yunb=None, mask_array
     xnodes_rav, ynodes_rav = xnodes.ravel(), ynodes.ravel()
     data_rav = data.ravel()
     unbinned_data = np.zeros_like(x_rav, dtype=data_rav.dtype)
-    for i in xrange(len(x_rav)) :
-        indclosestBin = argmin(dist2(x_rav[i], y_rav[i], xnodes_rav, ynodes_rav))
-        unbinned_data[i] = data_rav[indclosestBin]
 
+    ## Getting the mask array
+    if mask == None : 
+        mask_ravel = np.zeros_like(x_rav, dtype=bool)
+    else :
+        mask_ravel = mask.mask.ravel()
+    
+    ## If scipy is True (default) use griddata
+    if scipy :
+        import scipy
+        unbinned_data[-mask_ravel] = scipy.interpolate.griddata((xnodes_rav, ynodes_rav), data_rav, 
+             (x_rav[-mask_ravel], y_rav[-mask_ravel]), method='nearest')
+    ## Otherwise loop through the points
+    else :
+        interm_data = np.zeros_like(x_rav[-mask_ravel])
+        sizein_M = len(x_rav[-mask_ravel])
+        sizeout = len(xnodes_rave)
+        indclosestBin = np.argmin(dist2(x_rav[-mask_ravel].reshape(1,sizein_M),
+           y_rav[-mask_ravel].reshape(1, sizein_M), xnodes_rav.reshape(sizeout, 1),
+           ynodes_rav.reshape(sizeout, 1)), axis=0)
+        unbinned_data[-mask_ravel] = data_rav[indclosestBin]
+
+#         for i in xrange(len(x_rav[-mask_ravel])) :
+#             indclosestBin = argmin(dist2(x_rav[-mask_ravel][i], y_rav[-mask_ravel][i], xnodes_rav, ynodes_rav))
+#             interm_data[i] = data_rav[indclosestBin]
+#         unbinned_data[-mask_ravel] = interm_data
     
     return xunb, yunb, unbinned_data.reshape(xunb.shape)
 
@@ -373,7 +399,7 @@ class bin2D :
             ## List of bins which have statusnode as a status
             listbins = np.where(self.status==self.statusnode[i])[0]
             ## Weighted centroid of the node
-            self.xnode[i], self.ynode[i] = np.average(self.xin[listbins], weights=self.weight[listbins]), np.average(self.yin[listbins], weights=self.weight[listbins])
+            self.xnode[i], self.ynode[i] = np.ma.average(self.xin[listbins], weights=self.weight[listbins]), np.ma.average(self.yin[listbins], weights=self.weight[listbins])
             self.SNnode[i] = sum(self.data[listbins])/sqrt(sum(self.noise[listbins]**2))
             self.listbins.append(listbins)
 
@@ -536,8 +562,8 @@ class bin2D :
         SNout = np.zeros_like(dataout)
         for i in range(self.xnode.size) :
             listbins = self.listbins[i]
-            xout[i] = np.average(self.xin.ravel()[listbins], weights=datain[listbins])
-            yout[i] = np.average(self.yin.ravel()[listbins], weights=datain[listbins])
+            xout[i] = np.ma.average(self.xin.ravel()[listbins], weights=datain[listbins])
+            yout[i] = np.ma.average(self.yin.ravel()[listbins], weights=datain[listbins])
             dataout[i] = mean(datain[listbins])
             SNout[i] = sum(datain[listbins])/sqrt(sum(noisein[listbins]**2))
 
