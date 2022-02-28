@@ -119,8 +119,8 @@ def plot_1dfit_residuals(x, data, fit, nfig=None, legend=False) :
 
     ## checking that the dimensions are correct
     if (lx != ld) or (lx != lf) :
-        print "ERROR: dimensions for x, data, and fit are not the same"
-        print " (respectively: %d %d and %d)"%(lx, ld, lf)
+        print("ERROR: dimensions for x, data, and fit are not the same")
+        print(" (respectively: %d %d and %d)"%(lx, ld, lf))
         return
 
     xmin = np.min(np.abs(x_rav))
@@ -179,8 +179,8 @@ def show_2dfit_residuals(x, y, data, fit, xfield=None, yfield=None, nfig=None, c
 
     ## checking that the dimensions are correct
     if (lx != ld) or (lx != lf) or (lx != ly) :
-        print "ERROR: dimensions for x, y, data, and fit are not the same"
-        print " (respectively: %d %d %d and %d)"%(lx, ly, ld, lf)
+        print("ERROR: dimensions for x, y, data, and fit are not the same")
+        print(" (respectively: %d %d %d and %d)"%(lx, ly, ld, lf))
         return
 
     unbinned_residuals = derive_unbinned_field(x, y, 100.0 * (data-fit) / fit, xfield, yfield)
@@ -220,13 +220,13 @@ def plot_2dfit_residuals(x, y, data, fit, PAmin=0., PAmax=360., nSectors=8, Wedg
 
     ## checking that the dimensions are correct
     if (lx != ld) or (lx != lf) or (lx != ly) :
-        print "ERROR: dimensions for x, y, data, and fit are not the same"
-        print " (respectively: %d %d %d and %d)"%(lx, ly, ld, lf)
+        print("ERROR: dimensions for x, y, data, and fit are not the same")
+        print(" (respectively: %d %d %d and %d)"%(lx, ly, ld, lf))
         return
 
     ## Polar coordinates
     r, theta = convert_xy_to_polar(x_rav, y_rav)
-    theta = np.degrees(theta)
+    theta = np.degrees(theta) + 180.
 
     ## Selecting the points with respect to their sectors
     ## And sorting them out
@@ -236,7 +236,7 @@ def plot_2dfit_residuals(x, y, data, fit, PAmin=0., PAmax=360., nSectors=8, Wedg
     Max_Theta = Sample_Theta[:-1] + Step_Theta / WedgeFactor
 
     Sel_Theta = []
-    for i in xrange(nSectors) :
+    for i in range(nSectors) :
         newsel = np.argwhere((theta >= Min_Theta[i]) & (theta < Max_Theta[i]))
         Sel_Theta.append(newsel)
 
@@ -247,7 +247,7 @@ def plot_2dfit_residuals(x, y, data, fit, PAmin=0., PAmax=360., nSectors=8, Wedg
     ax01 = fig.add_subplot(nSectors, 2, 1)
     ax02 = fig.add_subplot(nSectors, 2, 2)
     _plot_1dfit(ax01, ax02, r[Sel_Theta[0]], d_rav[Sel_Theta[0]], f_rav[Sel_Theta[0]], xmin=xmin, xmax=xmax, labelx=False, legend=legend)
-    for i in xrange(1, nSectors-1) :
+    for i in range(1, nSectors-1) :
         ax1 = fig.add_subplot(nSectors, 2, 2*i+1, sharex=ax01)
         ax2 = fig.add_subplot(nSectors, 2, 2*i+2, sharex=ax02)
         _plot_1dfit(ax1, ax2, r[Sel_Theta[i]], d_rav[Sel_Theta[i]], f_rav[Sel_Theta[i]], xmin=xmin, xmax=xmax, labelx=False, legend=legend)
@@ -284,7 +284,7 @@ def contour_2dfit(x, y, data, fit=None, par=None, nfig=None, interp=True) :
     ## If interpolation is requested 
     if interp:
         if fit is None : 
-            print "ERROR: you did not provide 'fit' data"
+            print("ERROR: you did not provide 'fit' data")
             return
         xu, yu = guess_regular_grid(x, y)
         du = griddata(x, y, data, xu, yu, interp='nn')

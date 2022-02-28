@@ -53,21 +53,9 @@ try :
     Exist_LMFIT = True
 except ImportError :
     Exist_LMFIT = False
-    print "WARNING: Only mpfit is available an optimiser"
-    print "WARNING: you may want to install lmfit!"
+    print("WARNING: Only mpfit is available an optimiser")
+    print("WARNING: you may want to install lmfit!")
 
-# # If Openopt is there we can import it and allow the use to use BVLS
-# # Otherwise we just use nnls which is faster anyway
-# try :
-#     # If it works, can use openopt for 
-#     # bound-constrained linear least squares (wrapper of BVLS)
-#     import openopt
-#     from openopt import LLSP
-#     Exist_OpenOpt = True
-# except ImportError :
-#     Exist_OpenOpt = False
-#     print "WARNING: Only nnls is available as a linmethod"
-# 
 # Use scipy nnls to solve the linear part
 from scipy.optimize import nnls
 
@@ -115,7 +103,7 @@ def n_centred_onedgaussian_Imax(pars, I=None, sigma=None):
 
     def g1d(x):
         v = np.zeros_like(x)
-        for i in xrange(len(sigma)):
+        for i in range(len(sigma)):
             v += I[i] * exp( - 0.5 * (x / sigma[i])**2)
         return v
     return g1d
@@ -147,7 +135,7 @@ def _n_centred_onedgaussian_Inorm(pars, I=None, sigma=None):
 
     def g1d(x):
         v = np.zeros_like(x)
-        for i in xrange(len(I)):
+        for i in range(len(I)):
             v += Itot[i] * exp( - 0.5 * (x / sigma[i])**2)
         return v.ravel()
     return g1d
@@ -177,53 +165,53 @@ def _n_centred_onedgaussian_Datanorm(pars, sigma=None):
     ## Using polar cooordinates for simpler handling of PA
     def g1d_datanorm(x, data):
         v = np.zeros((np.size(x),Ng))
-        for i in xrange(Ng):
+        for i in range(Ng):
             v[:,i] = (Itot[i] * exp( - 0.5 * (x / sigma[i])**2) / data).ravel()
         return v
     return g1d_datanorm
 
-# ==========================================================================
-##------ Find the best set of amplitudes for fixed q,sigma,pa ----- ##
-##------ This is a linear bounded solution using BVLS
-# ==========================================================================
-def _optimise_onedgaussian_amp_bvls(pars, x=None, data=None) :
-    """
-    Returns the best set of amplitude for a given set of sigma
-    for a set of N 1D Gaussian functions
-    The function returns the result of the BVLS solving by LLSP (openopt)
-    pars  : input parameters including sigma
-    x     : radii
-    data  : data to fit
-       data and r should have the same size
-    """
-
-    ngauss = len(pars)
-
-    ## First get the normalised values from the gaussians
-    ## We normalised this also to 1/data to have a sum = 1
-    nGnorm = _n_centred_onedgaussian_Datanorm(pars=pars)(x,data)
-
-    ## This is the vector we wish to get as close as possible
-    ## The equation being : Sum_n In * (G1D_n) = 1.0
-    ##                   or       I  x    G    = d
-    d = np.ones(np.size(x), dtype=np.float64)
-
-    ## Lower and upper bounds (only positiveness)
-    lb = np.zeros(ngauss)
-    ub = lb + np.inf
-
-    ## Set up LLSP with the parameters and data (no print)
-    parBVLS = LLSP(nGnorm, d, lb=lb, ub=ub, iprint=-1)
-    ## Return the solution
-    sol_bvls = parBVLS.solve('bvls')
-    del parBVLS
-    return sol_bvls.xf
+## # ==========================================================================
+## ##------ Find the best set of amplitudes for fixed q,sigma,pa ----- ##
+## ##------ This is a linear bounded solution using BVLS
+## # ==========================================================================
+## def _optimise_onedgaussian_amp_bvls(pars, x=None, data=None) :
+##     """
+##     Returns the best set of amplitude for a given set of sigma
+##     for a set of N 1D Gaussian functions
+##     The function returns the result of the BVLS solving by LLSP (openopt)
+##     pars  : input parameters including sigma
+##     x     : radii
+##     data  : data to fit
+##        data and r should have the same size
+##     """
+## 
+##     ngauss = len(pars)
+## 
+##     ## First get the normalised values from the gaussians
+##     ## We normalised this also to 1/data to have a sum = 1
+##     nGnorm = _n_centred_onedgaussian_Datanorm(pars=pars)(x,data)
+## 
+##     ## This is the vector we wish to get as close as possible
+##     ## The equation being : Sum_n In * (G1D_n) = 1.0
+##     ##                   or       I  x    G    = d
+##     d = np.ones(np.size(x), dtype=np.float64)
+## 
+##     ## Lower and upper bounds (only positiveness)
+##     lb = np.zeros(ngauss)
+##     ub = lb + np.inf
+## 
+##     ## Set up LLSP with the parameters and data (no print)
+##     parBVLS = LLSP(nGnorm, d, lb=lb, ub=ub, iprint=-1)
+##     ## Return the solution
+##     sol_bvls = parBVLS.solve('bvls')
+##     del parBVLS
+##     return sol_bvls.xf
 
 # ==========================================================================
 ##------ Find the best set of amplitudes for fixed q,sigma,pa ----- ##
 ##------ This is a linear bounded solution using NNLS
 # ==========================================================================
-def _optimise_onedgaussian_amp_nnls(pars, x=None, data=None) :
+def _optimise_onedgaussian_amp_nnls(pars, x=None, data=None, faciter=10) :
     """ Returns the best set of amplitude for a given set of sigma
     for a set of N 1D Gaussian functions
 
@@ -248,9 +236,9 @@ def _optimise_onedgaussian_amp_nnls(pars, x=None, data=None) :
 
     ## Use NNLS to solve the linear bounded (0) equations
     try :
-        sol_nnls, norm_nnls = nnls(nGnorm, d)
+        sol_nnls, norm_nnls = nnls(nGnorm, d, maxiter=faciter*nGnorm.shape[1])
     except RuntimeError :
-        print "Warning: Too many iterations in NNLS"
+        print("Warning: Too many iterations in NNLS")
         return np.zeros(ngauss, dtype=np.float64)
     return sol_nnls
 
@@ -269,7 +257,7 @@ default_maxpars=[np.inf]
 default_fixed=[False]
 default_limitedmin=[True]
 default_limitedmax=[False]
-dic_linear_methods = {"nnls": _optimise_onedgaussian_amp_nnls, "bvls": _optimise_onedgaussian_amp_bvls}
+dic_linear_methods = {"nnls": _optimise_onedgaussian_amp_nnls}
 
 def set_parameters_and_default_1D(parlist, default, ngauss) :
     """
@@ -294,8 +282,8 @@ def set_parameters_and_default_1D(parlist, default, ngauss) :
         elif len(default) == 1 :
             parlist[:] = default * ngauss
         else :
-            print "ERROR: wrong passing of arguments in set_parameters_and_default_1D"
-            print "ERROR: the default has not the right size ", len(default)
+            print("ERROR: wrong passing of arguments in set_parameters_and_default_1D")
+            print("ERROR: the default has not the right size ", len(default))
 
     return parlist
 
@@ -333,7 +321,7 @@ class mpfitprint(object):
         self.chi2.append(fnorm)
         self.pars.append(p)
         self.parinfo.append(parinfo)
-        print "Chi2 = ", fnorm
+        print("Chi2 = ", fnorm)
 ## -------------------------------------------------------------------------------------
 
 ################################################################################
@@ -366,8 +354,6 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
      :param  linearmethod: Method used to solve the linear part of the problem
          Two methods are implemented: 
          "nnls" -> NNLS (default, included in scipy)
-         "bvls" -> LLSP/BVLS in openopt (only if available)
-         The variable Exist_OpenOpt is (internally) set to True if available
 
      :param  **fcnargs: Will be passed to MPFIT, you can for example use xtol, gtol, ftol, quiet
      :param  verbose: self-explanatory
@@ -382,20 +368,17 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
     import copy
 
     ## Set up some default parameters for mpfit
-    if "xtol" not in fcnargs.keys() : fcnargs["xtol"] = 1.e-10
-    if "gtol" not in fcnargs.keys() : fcnargs["gtol"] = 1.e-10
-    if "ftol" not in fcnargs.keys() : fcnargs["ftol"] = 1.e-10
-    if "quiet" not in fcnargs.keys() : fcnargs["quiet"] = True
+    if "xtol" not in list(fcnargs.keys()) : fcnargs["xtol"] = 1.e-10
+    if "gtol" not in list(fcnargs.keys()) : fcnargs["gtol"] = 1.e-10
+    if "ftol" not in list(fcnargs.keys()) : fcnargs["ftol"] = 1.e-10
+    if "quiet" not in list(fcnargs.keys()) : fcnargs["quiet"] = True
 
     ## Checking the method used for the linear part
-    if linear_method == "bvls" and not Exist_OpenOpt :
-        print "WARNING: you selected BVLS, but OpenOpt is not installed"
-        print "WARNING: we will therefore use NNLS instead"
-        linear_method == "nnls"
+    linear_method == "nnls"
 
     ## Checking if the linear_method is implemented
-    if linear_method.lower() not in dic_linear_methods.keys():
-        print "ERROR: you should use one of the following linear_method: ", dic_linear_methods.keys()
+    if linear_method.lower() not in list(dic_linear_methods.keys()):
+        print("ERROR: you should use one of the following linear_method: ", list(dic_linear_methods.keys()))
         return 0, 0, 0, 0
 
     f_Get_Iamp = dic_linear_methods[linear_method.lower()]
@@ -423,8 +406,8 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
         if (len(params) > ngauss): 
             ngauss = len(params)
             if verbose :
-                print "WARNING: Your input parameters do not fit the Number of input Gaussians"
-                print "WARNING: the new number of input Gaussians is: ", ngauss
+                print("WARNING: Your input parameters do not fit the Number of input Gaussians")
+                print("WARNING: the new number of input Gaussians is: ", ngauss)
 
     ## if no input parameters are given, we set up the guess as a log spaced sigma between min and max
     default_params = np.logspace(lminS + DlSigma, lmaxS - DlSigma, ngauss)
@@ -461,29 +444,29 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
 
     ## Information about the parameters
     if veryverbose :
-        print "------------------"
-        print "GUESS:      Sig   "
-        print "------------------"
-        for i in xrange(ngauss) :
-            print "GAUSS %02d: %8.3e"%(i+1, params[i])
-        print "--------------------------------------"
+        print("------------------")
+        print("GUESS:      Sig   ")
+        print("------------------")
+        for i in range(ngauss) :
+            print("GAUSS %02d: %8.3e"%(i+1, params[i]))
+        print("--------------------------------------")
 
     ## Information about the parameters
     parnames = {0:"SIGMA"}
     parinfo = [ {'n':ii, 'value':params[ii], 'limits':[minpars[ii],maxpars[ii]], 
         'limited':[limitedmin[ii],limitedmax[ii]], 'fixed':fixed[ii], 
-        'parname':parnames[0]+str(ii+1), 'error':ii} for ii in xrange(len(params)) ]
+        'parname':parnames[0]+str(ii+1), 'error':ii} for ii in range(len(params)) ]
 
     ## Fit with mpfit of q, sigma, pa on xax, yax, and data (+err)
     fa = {'x': xax, 'data': data, 'err':err, 'f_Get_Iamp':f_Get_Iamp}
 
     if verbose: 
-        print "------ Starting the minimisation -------"
+        print("------ Starting the minimisation -------")
     result = mpfit(mpfitfun, functkw=fa, iterfunct=mpfitprint, nprint=1, parinfo=parinfo, **fcnargs) 
     ## Getting these best fit values into the dictionnary
     bestparinfo = [ {'n':ii, 'value':result.params[ii], 'limits':[minpars[ii],maxpars[ii]], 
         'limited':[limitedmin[ii],limitedmax[ii]], 'fixed':fixed[ii], 
-        'parname':parnames[0]+str(ii), 'error':ii} for ii in xrange(len(result.params)) ]
+        'parname':parnames[0]+str(ii), 'error':ii} for ii in range(len(result.params)) ]
 
     ## Recompute the best amplitudes to output the right parameters
     ## And renormalising them
@@ -497,11 +480,11 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
     else : nerr =  err
     ## First get the Chi2 from this round
     bestChi2 = fitn1dgauss_chi2_err(Ibestpar_array, xax, data, nerr)
-    result.ind = range(ngauss)
+    result.ind = list(range(ngauss))
 
     k = 0
     Removed_Gaussians = []
-    for i in xrange(ngauss) :
+    for i in range(ngauss) :
         ## Derive the Chi2 WITHOUT the ith Gaussian
         newChi2 = fitn1dgauss_chi2_err(np.delete(Ibestpar_array, i, 0), xax, data, nerr)
         ## If this Chi2 is smaller than factor_Chi2 times the best value, then remove
@@ -514,14 +497,14 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
 
     if veryverbose :
         if len(Removed_Gaussians) != 0 :
-            print "WARNING Removed Gaussians ", Removed_Gaussians
-            print "WARNING: (not contributing enough to the fit)"
+            print("WARNING Removed Gaussians ", Removed_Gaussians)
+            print("WARNING: (not contributing enough to the fit)")
     ngauss = len(result.ind)
 
     ## New minimisation after removing all the non relevant Gaussians
     newresult = mpfit(mpfitfun, functkw=fa, iterfunct=mpfitprint, nprint=1, parinfo=bestparinfo, **fcnargs) 
 
-    newresult.ind = range(ngauss)
+    newresult.ind = list(range(ngauss))
     bestfit_params = newresult.params
 
     ## We add the Amplitudes to the array and renormalise them
@@ -535,13 +518,13 @@ def multi_1dgauss_mpfit(xax, data, ngauss=1, err=None, params=None,
         raise Exception(newresult.errmsg)
 
     if verbose :
-        print "============================="
-        print "FIT:      Imax       Sig   "
-        print "============================="
-        for i in xrange(ngauss) :
-            print "GAUSS %02d: %8.3e  %8.3f"%(i+1, Ibestfit_params[i,0], Ibestfit_params[i,1])
+        print("=============================")
+        print("FIT:      Imax       Sig   ")
+        print("=============================")
+        for i in range(ngauss) :
+            print("GAUSS %02d: %8.3e  %8.3f"%(i+1, Ibestfit_params[i,0], Ibestfit_params[i,1]))
 
-        print "Chi2: ",newresult.fnorm," Reduced Chi2: ",newresult.fnorm/len(data)
+        print("Chi2: ",newresult.fnorm," Reduced Chi2: ",newresult.fnorm/len(data))
 
     return Ibestfit_params, newresult, n_centred_onedgaussian_Imax(pars=Ibestfit_params)(xax)
    
@@ -553,7 +536,7 @@ def extract_mult1dG_params(Params) :
     ind = Params.ind
     ngauss = len(ind)
     p = np.zeros(ngauss, np.float64)
-    for i in xrange(ngauss) :
+    for i in range(ngauss) :
         p[i] = Params['Sigma%02d'%(ind[i]+1)].value
     return p
 
@@ -570,7 +553,7 @@ class lmfit_iprint(object):
                 chi2 = ((res*res).sum())
                 self.chi2.append(chi2)
                 self.pars.append(pars)
-                print "Chi2 = %g" % chi2
+                print("Chi2 = %g" % chi2)
                 myinput.aprint = 0
             myinput.aprint += 1
 
@@ -602,10 +585,8 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
     :param  lmfit_method: method to pass on to lmfit ('leastsq', 'lbfgsb', 'anneal')
         Default is leastsq (most efficient for the problem)
     :param  linearmethod: Method used to solve the linear part of the problem
-        Two methods are implemented: 
+        One method is implemented (bvls has been discarded): 
         "nnls" -> NNLS (default, included in scipy)
-        "bvls" -> LLSP/BVLS in openopt (only if available)
-        The variable Exist_OpenOpt is (internally) set to True if available
     :param  **fcnargs: Will be passed to LMFIT, you can for example use: xtol , gtol, ftol,  etc
     :param  iprint: if > 0 and verbose, print every iprint iterations of lmfit. default is 50
     :param  verbose: self-explanatory
@@ -624,24 +605,21 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
 
     ## Method check
     if lmfit_method not in lmfit_methods :
-        print "ERROR: method must be one of the three following methods : ", lmfit_methods
+        print("ERROR: method must be one of the three following methods : ", lmfit_methods)
 
     ## Setting up epsfcn if not forced by the user
     ## We removed epsfcn as it is usually just the machine precision
     ## if "epsfcn" not in fcnargs.keys() : fcnargs["epsfcn"] = 1.e-20
-    if "xtol" not in fcnargs.keys() : fcnargs["xtol"] = 1.e-10
-    if "gtol" not in fcnargs.keys() : fcnargs["gtol"] = 1.e-10
-    if "ftol" not in fcnargs.keys() : fcnargs["ftol"] = 1.e-10
+    if "xtol" not in list(fcnargs.keys()) : fcnargs["xtol"] = 1.e-10
+    if "gtol" not in list(fcnargs.keys()) : fcnargs["gtol"] = 1.e-10
+    if "ftol" not in list(fcnargs.keys()) : fcnargs["ftol"] = 1.e-10
 
     ## Checking the method used for the linear part
-    if linear_method == "bvls" and not Exist_OpenOpt :
-        print "WARNING: you selected BVLS, but OpenOpt is not installed"
-        print "WARNING: we will therefore use NNLS instead"
-        linear_method == "nnls"
+    linear_method == "nnls"
 
     ## Checking if the linear_method is implemented
-    if linear_method.lower() not in dic_linear_methods.keys():
-        print "ERROR: you should use one of the following linear_method: ", dic_linear_methods.keys()
+    if linear_method.lower() not in list(dic_linear_methods.keys()):
+        print("ERROR: you should use one of the following linear_method: ", list(dic_linear_methods.keys()))
         return 0, 0, 0
 
     f_Get_Iamp = dic_linear_methods[linear_method.lower()]
@@ -668,8 +646,8 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
         if (len(params) > ngauss): 
             ngauss = len(params) 
             if verbose :
-                print "WARNING: Your input parameters do not fit the Number of input Gaussians"
-                print "WARNING: the new number of input Gaussians is: ", ngauss
+                print("WARNING: Your input parameters do not fit the Number of input Gaussians")
+                print("WARNING: the new number of input Gaussians is: ", ngauss)
 
     ## if no input parameters are given, we set up the guess as a log spaced sigma between min and max
     default_params = np.logspace(lminS + DlSigma, lmaxS - DlSigma, ngauss)
@@ -723,16 +701,16 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
     nameParam = ['Sigma']
     Lparams = Parameters()
     if verbose :
-        print "-------------------"
-        print "GUESS:      Sig    "
-        print "-------------------"
-    for i in xrange(ngauss) :
+        print("-------------------")
+        print("GUESS:      Sig    ")
+        print("-------------------")
+    for i in range(ngauss) :
         Lparams.add(nameParam[0]+"%02d"%(i+1), value=params[i], min=minpars[i], max=maxpars[i], vary= not fixed[i])
         if verbose :
-            print "GAUSS %02d: %8.3e"%(i+1, params[i])
-    if veryverbose : print "--------------------------------------"
+            print("GAUSS %02d: %8.3e"%(i+1, params[i]))
+    if veryverbose : print("--------------------------------------")
     ## Adding indices to follow up the Gaussians we may remove
-    Lparams.ind = range(ngauss)
+    Lparams.ind = list(range(ngauss))
 
     ## Setting up the printing option
     myinput = input_residuals(iprint, verbose)
@@ -741,10 +719,10 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
     ## Doing the minimisation with lmfit
     ####################################
     if verbose: 
-        print "------ Starting the minimisation -------"
+        print("------ Starting the minimisation -------")
     result = minimize(opt_lmfit, Lparams, method=lmfit_method, args=(myinput, xax, err, data, f_Get_Iamp), **fcnargs)
     ## Remove the Null Gaussians
-    result.params.ind = range(ngauss)
+    result.params.ind = list(range(ngauss))
     ngauss, Ind_ZGauss = Remove_Zero_1DGaussians(ngauss, nameParam, result, xax, data, err, factor_Chi2,
             f_Get_Iamp, niter=1, verbose=veryverbose) 
 
@@ -764,13 +742,13 @@ def multi_1dgauss_lmfit(xax, data, ngauss=1, err=None, params=None,
     Ibestfit_params = Ibestfit_params[Ibestfit_params[:,1].argsort()]
 
     if verbose :
-        print "============================="
-        print "FIT:      Imax       Sig   "
-        print "============================="
-        for i in xrange(ngauss) :
-            print "GAUSS %02d: %8.3e  %8.3f "%(i+1, Ibestfit_params[i,0], Ibestfit_params[i,1])
+        print("=============================")
+        print("FIT:      Imax       Sig   ")
+        print("=============================")
+        for i in range(ngauss) :
+            print("GAUSS %02d: %8.3e  %8.3f "%(i+1, Ibestfit_params[i,0], Ibestfit_params[i,1]))
 
-        print "Chi2: ",newresult.chisqr," Reduced Chi2: ",newresult.redchi
+        print("Chi2: ",newresult.chisqr," Reduced Chi2: ",newresult.redchi)
 
     return Ibestfit_params, newresult, n_centred_onedgaussian_Imax(pars=Ibestfit_params)(xax)
 
@@ -792,7 +770,7 @@ def Remove_Zero_1DGaussians(ngauss, nameParam, result, xax, data, err, factor_Ch
 
     k = 0
     Removed_Gaussians = []
-    for i in xrange(ngauss) :
+    for i in range(ngauss) :
         ## Derive the Chi2 WITHOUT the ith Gaussian
         newChi2 = fitn1dgauss_chi2_err(np.delete(Ibestpar_array, i, 0), xax, data, nerr)
         ## If this Chi2 is smaller than factor_Chi2 times the best value, then remove
@@ -806,7 +784,7 @@ def Remove_Zero_1DGaussians(ngauss, nameParam, result, xax, data, err, factor_Ch
 
     if verbose :
         if len(Removed_Gaussians) != 0 :
-            print "WARNING Removed Gaussians (iteration %d) : "%(niter), Removed_Gaussians
-            print "WARNING: (not contributing enough to the fit)"
+            print("WARNING Removed Gaussians (iteration %d) : "%(niter), Removed_Gaussians)
+            print("WARNING: (not contributing enough to the fit)")
 
     return New_ngauss, Removed_Gaussians

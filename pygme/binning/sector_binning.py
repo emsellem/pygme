@@ -79,11 +79,11 @@ def bin_to_sectors(x, y, data, **kwargs) :
 
     ## This provides a factor of 1.1 per range
     FactorRadius = kwargs.get('FactorRadius', 1.1)
-    Nradii_per_decade = 1. / np.log10(1.1)
+    Nradii_per_decade = 1. / np.log10(FactorRadius)
 
     ## First check that the sizes of the input coordinates + data are the same
     if (np.size(x) != np.size(y)) | (np.size(x) != np.size(data)) :
-        print "ERROR : please check the sizes of your input arrays -> they should be the same!"
+        print("ERROR : please check the sizes of your input arrays -> they should be the same!")
         return [0.], [0.], [0.]
 
     ## Then selecting the good points
@@ -93,12 +93,12 @@ def bin_to_sectors(x, y, data, **kwargs) :
     data = data[seldata].ravel()
     ## Checking if all is ok
     if np.size(data) == 0 :
-        print "ERROR : after selecting points above MinLevel (%f), the array is empty!"%(MinLevel)
+        print("ERROR : after selecting points above MinLevel (%f), the array is empty!"%(MinLevel))
         return [0.], [0.], [0.]
 
     ## Then check that the ellipticity is 0 <= eps < 1
     if (Ellipticity < 0) | (Ellipticity >= 1) :
-        print "ERROR : please check your input Ellipticity (%f) as it should be in [0,1[ !"%(Ellipticity)
+        print("ERROR : please check your input Ellipticity (%f) as it should be in [0,1[ !"%(Ellipticity))
         return [0.], [0.], [0.]
 
     ## We first recenter the data
@@ -123,7 +123,7 @@ def bin_to_sectors(x, y, data, **kwargs) :
     minr_ell, maxr_ell = np.min(radii_ell[np.nonzero(radii_ell)]), np.max(radii_ell)
     ## We go from minimum to max * 1.1
     sampleR = np.logspace(np.log10(minr_ell), np.log10(maxr_ell), 
-                 Nradii_per_decade * np.log10(maxr_ell/minr_ell) + 1)
+                 np.int(Nradii_per_decade * np.log10(maxr_ell/minr_ell) + 1))
     ## And add the centre
     sampleR = np.concatenate(([-1.0], sampleR))
     Nradii = len(sampleR)
@@ -179,9 +179,9 @@ def bin_to_sectors(x, y, data, **kwargs) :
     digitT = np.digitize(theta, sampleT)
 
     ## And we loop over the Sectors
-    for j in xrange(NSectors) :
+    for j in range(NSectors) :
         if verbose :
-             print "Section %02d starting"%(j+1)
+             print("Section %02d starting"%(j+1))
         ## We select the bins within that sector
         selJ = (digitT == j+1)
         dataJ = data[selJ]
@@ -196,15 +196,21 @@ def bin_to_sectors(x, y, data, **kwargs) :
         for i in selH0 :
             spoints = (digitRJ == i+1) 
             dataS = dataJ[spoints]
-            radout[i, j] = np.average(radiiJ[spoints], weights=dataS)
-            dataout[i,j] = dataS.mean()
-            sigmaout[i,j] = np.sqrt(Gain * dataS.sum()) / histBins[i,j]
+            if np.sum(dataS) <= 0.:
+                dataout[i, j] = -1e10
+            else:
+                radout[i, j] = np.average(radiiJ[spoints], weights=dataS)
+                dataout[i, j] = dataS.mean()
+                sigmaout[i, j] = np.sqrt(Gain * dataS.sum()) / histBins[i,j]
         for i in selH10 :
             spoints = (digitRJ == i+1)
             dataS = dataJ[spoints]
-            radout[i, j] = np.average(radiiJ[spoints], weights=dataS)
-            dataout[i,j] = robust_mean(dataS)
-            sigmaout[i,j] = robust_sigma(dataS)
+            if np.sum(dataS) <= 0.:
+                dataout[i, j] = -1e10
+            else:
+                radout[i, j] = np.average(radiiJ[spoints], weights=dataS)
+                dataout[i, j] = robust_mean(dataS)
+                sigmaout[i, j] = robust_sigma(dataS)
 
     ## Final selection without the negative points
     selfinal = (dataout > -999) & (dataout > MinBinLevel)

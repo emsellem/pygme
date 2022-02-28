@@ -26,7 +26,7 @@ except ImportError:
 
 from numpy import inf
 
-from rwcfor import floatMGE, floatG
+from .rwcfor import floatMGE, floatG
 
 from pygme.photMGE import photMGE
 from pygme.mge_miscfunctions import quadrat_ps_roots
@@ -79,7 +79,7 @@ class dynMGE(photMGE) :
 
         ## INTEGRAL via quadrature
         result = Wquad[0] * self._IntMu1(Xquad[0], R2, Z2, ilist)
-        for i in xrange(1,len(Xquad)) :
+        for i in range(1,len(Xquad)) :
             result += Wquad[i] * self._IntMu1(Xquad[i], R2, Z2, ilist)
         Integrand = sqrt(self.rhoLT * result)
 
@@ -95,9 +95,9 @@ class dynMGE(photMGE) :
         rhop = self._rhoL2D_fromX2Y2(X2, Y2, ilist)
 
         result = np.zeros_like(X2)
-        for i in xrange(shape(X2)[0]) :
-            for j in xrange(shape(X2)[1]) :
-                print "%f %f \n" %(X[i,j], Y[i,j])
+        for i in range(shape(X2)[0]) :
+            for j in range(shape(X2)[1]) :
+                print("%f %f \n" %(X[i,j], Y[i,j]))
                 ### INTEGRAL between -infinity and infinity along the line of sight
                 result[i,j] = float(scipy.integrate.quad(self._IntlosMu1, -inf, inf, epsabs=1.e-01, epsrel=1.e-01, args=(X2[i,j], Y[i,j], cosi, sini, Xquad, Wquad, ilist))[0])
 
@@ -141,7 +141,7 @@ class dynMGE(photMGE) :
         cosi2 = cosi * cosi
 
         result = np.zeros_like(X)
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             result += Wquad[i] * self._IntMu2(Xquad[i], X2, Y2, cosi2, sini2, ilist)
         return 4. * np.pi**1.5 * self.G * result / self.rhop # en km^2.s-2
     ###=============================================================================
@@ -176,7 +176,7 @@ class dynMGE(photMGE) :
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         R2 = R*R
         Z2 = Z*Z
-        result = np.sum(Wquad[i] * self._IntPot(Xquad[i], R2, Z2, ilist) for i in xrange(self.Nquad))
+        result = np.sum(Wquad[i] * self._IntPot(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
 
         if (self.Mbh > 0.) :
             mask = (R2 + Z2 == 0.)
@@ -222,7 +222,7 @@ class dynMGE(photMGE) :
         ### First compute the gaussian quadrature points, and weights
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         R2 = R*R
-        result = R2 * np.sum(Wquad[i] * self._IntVc(Xquad[i], R2, ilist) for i in xrange(self.Nquad))
+        result = R2 * np.sum(Wquad[i] * self._IntVc(Xquad[i], R2, ilist) for i in range(self.Nquad))
 
         if (self.Mbh > 0.) :
             mask = (R == 0.)
@@ -261,7 +261,7 @@ class dynMGE(photMGE) :
         result = np.zeros_like(R)
         R2 = R*R
         Z2 = Z*Z
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             result += Wquad[i] * self._IntaccR(Xquad[i], R2, Z2, ilist)
         return self.PIG * result * R / self.pc_per_arcsec  # en km^2.s-2.pc-1
     #===========================================================
@@ -273,7 +273,7 @@ class dynMGE(photMGE) :
         result = np.zeros_like(R)
         R2 = R*R
         Z2 = Z*Z
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             result += Wquad[i] * self._IntaccZ(Xquad[i], R2, Z2, ilist)
         return self.PIG * result * Z / self.pc_per_arcsec  # en km^2.s-2.pc-1
     #===========================================================
@@ -295,7 +295,7 @@ class dynMGE(photMGE) :
         result = np.zeros_like(R)
         R2 = R*R
         Z2 = Z*Z
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             result += Wquad[i] * self._Intd2Potd2R(Xquad[i], R2, Z2, ilist)
         return self.PIG * result / (self.pc_per_arcsec*self/pc_per_arcsec)  # en km^2.s-2.pc-2
     #===========================================================
@@ -357,7 +357,7 @@ class dynMGE(photMGE) :
         ### First compute the gaussian quadrature points, and weights
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         R2 = R*R
-        result = np.sum(Wquad[i] * self._IntVc(Xquad[i], R2, ilist) for i in xrange(self.Nquad))
+        result = np.sum(Wquad[i] * self._IntVc(Xquad[i], R2, ilist) for i in range(self.Nquad))
 
         if (self.Mbh > 0.) :
             mask = (R == 0.)
@@ -397,7 +397,7 @@ class dynMGE(photMGE) :
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         result = np.zeros_like(R)
         R2 = R*R
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             result += Wquad[i] * self._Intkappa(Xquad[i], R2, ilist)
         return sqrt(self.PIG * result) / self.pc_per_arcsec  # en km.s-1.pc-1
     #===========================================================
@@ -512,7 +512,7 @@ class dynMGE(photMGE) :
         rsoft = sqrt(r2soft)
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
-        sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in xrange(self.Nquad))
+        sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
         if self.Mbh > 0. :
@@ -546,7 +546,7 @@ class dynMGE(photMGE) :
         rsoft = sqrt(r2soft)
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
-        sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in xrange(self.Nquad))
+        sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
         if self.Mbh > 0. :
@@ -582,7 +582,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         # MU2
-        VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist) for i in xrange(self.Nquad))
+        VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
         if self.Mbh > 0. :
@@ -617,7 +617,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         # MU2
-        VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist=ilist) for i in xrange(self.Nquad))
+        VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist=ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
         if self.Mbh > 0. :
@@ -651,12 +651,12 @@ class dynMGE(photMGE) :
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.zeros_like(R2)
         # sigmaz2
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             sigz2 += Wquad[i] * self._intsigma_z2(Xquad[i],  R2, Z2, ilist)
 
         # MU2
         muTheta2 = np.zeros_like(R2)
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             muTheta2 += Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist)
 
         # Contribution from the BH
@@ -699,12 +699,12 @@ class dynMGE(photMGE) :
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.zeros_like(R2)
         # sigmaz2
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             sigz2 += Wquad[i] * self._intsigma_z2(Xquad[i],  R2, Z2, ilist)
 
         # MU2
         muTheta2 = np.zeros_like(R2)
-        for i in xrange(self.Nquad) :
+        for i in range(self.Nquad) :
             muTheta2 += Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist)
 
         # Contribution from the BH

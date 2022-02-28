@@ -17,7 +17,7 @@ except ImportError:
 
 from numpy import cos, sin, sqrt
 
-from rwcfor import floatsG, floatG, intG
+from .rwcfor import floatsG, floatG, intG
 
 from pygme.plotsnap import PlotSnap
 
@@ -74,7 +74,7 @@ class SnapShot(PlotSnap) :
             if os.path.isfile(name):
                 self.read_ascii(name)
             else :
-                print 'Path %s' %(name), ' does not exists, sorry!'
+                print('Path %s' %(name), ' does not exists, sorry!')
                 return
             self.indices_sim()
         else :
@@ -111,17 +111,17 @@ class SnapShot(PlotSnap) :
         self.uergcc = float(self.umass/(self.udistcgs*self.utime**2))
 
         if verbose:
-            print '----------------------------'
-            print 'Units in SIMULATION (%s):' %(self.typesim)
-            print ' Mass (solar masses)=',self.umass
-            print ' Distance (kiloparcsec)=',self.udist
-            print ' Velocity (km/s)=',self.uvelo
-            print ' Constant of Gravitation (Msol/pc/yr)=',GG
-            print ' Density=',self.udens
-            print ' Time (years)=',self.utime
-            print ' Specific Internal Energy=',self.uergg
-            print ' Volume Internal Energy=',self.uergcc
-            print '----------------------------'
+            print('----------------------------')
+            print('Units in SIMULATION (%s):' %(self.typesim))
+            print(' Mass (solar masses)=',self.umass)
+            print(' Distance (kiloparcsec)=',self.udist)
+            print(' Velocity (km/s)=',self.uvelo)
+            print(' Constant of Gravitation (Msol/pc/yr)=',GG)
+            print(' Density=',self.udens)
+            print(' Time (years)=',self.utime)
+            print(' Specific Internal Energy=',self.uergg)
+            print(' Volume Internal Energy=',self.uergcc)
+            print('----------------------------')
 
         return
     ###=============================================================================
@@ -213,7 +213,7 @@ class SnapShot(PlotSnap) :
 ##         self.iminn = self.imaxb
 ##         self.imaxn = self.iminn + self.nform
         else :
-            print "ERROR: type of simulation not recognised\n"
+            print("ERROR: type of simulation not recognised\n")
             return
 
         self.imins = (self.iming,self.iminb,self.imind,self.iminn,self.iminh)

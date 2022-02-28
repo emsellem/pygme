@@ -17,7 +17,7 @@ def get_package_data(dataname, asfile=False):
     import os
     dirpath = os.path.dirname(inspect.stack()[1][1])
     datapath = dirpath+'/data/'+dataname
-    print datapath
+    print(datapath)
     return get_data(datapath, asfile=asfile)
 
 def get_data(datapath, asfile=False):
@@ -46,7 +46,7 @@ def get_data(datapath, asfile=False):
 
     ## The file is a local file - try to get it
     if not os.path.isfile(datapath) :
-        print "The file %s you are trying to access does not exist" %(datapath)
+        print("The file %s you are trying to access does not exist" %(datapath))
         raise IOError
     fn = datapath
     if asfile:

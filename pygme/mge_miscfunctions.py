@@ -22,7 +22,7 @@ try:
 except ImportError:
     raise Exception("scipy is required for pygme")
 
-from rwcfor import floatMGE
+from .rwcfor import floatMGE
 from numpy import sin, cos, exp, sqrt, pi
 
 import matplotlib
@@ -54,13 +54,13 @@ def print_msg(text="", status=0, verbose=0) :
 
     """
     if status >= 2 :
-        print "ERROR with status %d while %s" %(status, text)
+        print("ERROR with status %d while %s" %(status, text))
     elif status == 1 :
-        print "WARNING with status %d while %s" %(status, text)
+        print("WARNING with status %d while %s" %(status, text))
     elif status <= 0 :
         if verbose :
-            print "Status OK (0) while %s" %(text)
-        print text
+            print("Status OK (0) while %s" %(text))
+        print(text)
        
 #===================================================
 
@@ -196,15 +196,12 @@ def convert_xy_to_polar(x, y, cx=0.0, cy=0.0, PA=None) :
     if PA is None : PA = -np.pi / 2.
     ## If the PA does not have X along the abscissa, rotate
     if np.mod(PA+np.pi/2., np.pi) != 0.0 : x, y = rotxyC(x, y, cx=cx, cy=cy, angle=PA+np.pi/2.)
+    else : x, y = x - cx, y - cy
 
     ## Polar coordinates
     r = np.sqrt(x**2 + y**2)
     ## Now computing the true theta
-    theta = np.zeros_like(r)
-    theta[(x == 0.) & (y >= 0.)] = pi / 2.
-    theta[(x == 0.) & (y < 0.)] = -pi / 2.
-    theta[(x < 0.)] = np.arctan(y[(x < 0.)] / x[(x < 0.)]) + pi
-    theta[(x > 0.)] = np.arctan(y[(x > 0.)] / x[(x > 0.)])
+    theta = np.arctan2(y, x)
     return r, theta
 #-------------------------------------------------------------------------------------------------------------
 def convert_polar_to_xy(r, theta) :
@@ -244,7 +241,7 @@ def rotxyC(x, y, cx=0.0, cy=0.0, angle=0.0) :
     xt = x - cx
     yt = y - cy
     ## Then only rotation
-    return rotxC(x, y, angle=angle), rotyC(x, y, angle=angle)
+    return rotxC(xt, yt, angle=angle), rotyC(xt, yt, angle=angle)
 #-------------------------------------------------------------------------------------------------------------
 def _gaussianROTC(height, center_x, center_y, width_x, width_y, angle):
     """Returns a gaussian function with the given parameters
@@ -381,10 +378,10 @@ def find_ImageCenter(image=None, showfit=False, verbose=True, threshold=None) :
         ax.set_ylim(starty, endy)
 
     if verbose :
-        print "Center of the image found at: ", xcen, "  ", ycen
-        print "Ellipticity: ", eps
-        print "Position Angle: ", theta
-        print "Maximum Radius of point accounted for: ", maxRadius
+        print("Center of the image found at: ", xcen, "  ", ycen)
+        print("Ellipticity: ", eps)
+        print("Position Angle: ", theta)
+        print("Maximum Radius of point accounted for: ", maxRadius)
     return xcen, ycen, major, minor, eps, theta
 #-------------------------------------------------------------------------------------------------------------
 def fit_ImageCenter(image=None, showfit=False) :
@@ -418,10 +415,10 @@ def fit_ImageCenter(image=None, showfit=False) :
     width_yarc = width_y * stepy 
     
     ## Some printing
-    print "Center is X, Y = %8.4f %8.4f" %(cenxarc, cenyarc)
-    print "Width is X, Y = %8.4f %8.4f" %(width_xarc, width_yarc)
-    print "Start/End %8.4f %8.4f %8.4f %8.4f" %(startx, starty, endx, endy)
-    print "Angle %8.4f" %(np.degrees(angle))
+    print("Center is X, Y = %8.4f %8.4f" %(cenxarc, cenyarc))
+    print("Width is X, Y = %8.4f %8.4f" %(width_xarc, width_yarc))
+    print("Start/End %8.4f %8.4f %8.4f %8.4f" %(startx, starty, endx, endy))
+    print("Angle %8.4f" %(np.degrees(angle)))
 
     fitdata = fit(*np.indices(datatofit.shape))
     if showfit:
@@ -445,10 +442,10 @@ def GaussHermite(Vbin=None, GH=None) :
 
     degree = len(GH) - 1
     if degree < 2 :
-        print "Error: no enough parameters here"
+        print("Error: no enough parameters here")
         return Vbin * 0.
     if GH[2] == 0. :
-        print "Error: Sigma is 0!"
+        print("Error: Sigma is 0!")
         return Vbin * 0.
     VbinN = (Vbin - GH[1]) / GH[2]
     VbinN2 = VbinN * VbinN
@@ -458,7 +455,7 @@ def GaussHermite(Vbin=None, GH=None) :
     GH2 = GH1
 
     var = 1.0
-    for i in xrange(3, degree+1) :
+    for i in range(3, degree+1) :
         var += GH[i] * GH2
         GH2 = (sqrt(2.) * GH1 * VbinN - GH0) / sqrt(i+1.0);
         GH0 = GH1;

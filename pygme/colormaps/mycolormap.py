@@ -16,7 +16,7 @@ import numpy as np       # numpy to be used as num
 try :
     import matplotlib
 except ImportError:
-    print 'There is a problem with importing matplotlib (pylab) at initialisation'
+    print('There is a problem with importing matplotlib (pylab) at initialisation')
 
 import matplotlib.pyplot as plt
 from matplotlib import colors

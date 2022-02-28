@@ -27,9 +27,9 @@ try:
 except ImportError:
     raise Exception("scipy is required for pygme")
 
-from rwcfor import floatMGE
-from paramMGE import paramMGE
-from mge_miscfunctions import print_msg
+from .rwcfor import floatMGE
+from .paramMGE import paramMGE
+from .mge_miscfunctions import print_msg
 
 __version__ = '1.1.1 (21/08/2013)'
 #__version__ = '1.1.0 (28/08/2012)'
@@ -168,7 +168,7 @@ class photMGE(paramMGE):
         if self._findGauss3D == 0 : 
             print_msg("No Spatial Gaussians yet", 2)
             return R2*0.
-        return self.Imax3Darc[ind] * exp(- (R2 + Z2 / self.QxZ2[ind]) / self._pParam.dSig3Darc2[ind])  # I in Lum.pc-2/arcsec-1
+        return self.Imax3D[ind] * exp(- (R2 + Z2 / self.QxZ2[ind]) / self._pParam.dSig3Darc2[ind])  # I in Lum.pc-2/arcsec-1
     ### Deriving the spatial luminosity density for 1 gaussian
     def rhoL3D_1G(self, R, Z, ind) :
         """
@@ -218,7 +218,7 @@ class photMGE(paramMGE):
             return R2*0.
         rhoL = np.zeros_like(R2)
         for i in ilist :
-            rhoL += self._rhoLspatial_1G_fromR2Z2(R2, Z2, i)
+            rhoL += self._rhoL3D_1G_fromR2Z2(R2, Z2, i)
         return rhoL  # I in Lum.pc-3
     ### Deriving the spatial luminosity density for all
     def rhoL3D(self, R, Z, ilist=None) :
@@ -277,7 +277,7 @@ class photMGE(paramMGE):
             print_msg("No Spatial Gaussians yet", 2)
             return R * 0.
         R2 = R * R
-        return self.Imax3Darc[ind] * sqrt(2. * np.pi) * self.qSig3Darc[ind] * exp(- R2 / self._pParam.dSig3Darc2[ind])  # in Lum.pc-2
+        return self.Imax3D[ind] * sqrt(2. * np.pi) * self.qSig3Darc[ind] * exp(- R2 / self._pParam.dSig3Darc2[ind])  # in Lum.pc-2
 
     ### Deriving the integrated Lum (Zcut) for 1 gaussian, R and Z are in arcsec
     def _rhointLZ_1G(self, R, Zcut, ind):

@@ -12,7 +12,7 @@ except ImportError:
     raise Exception("scipy is required for pygme")
 
 import os
-from rwcfor import floatMGE
+from .rwcfor import floatMGE
 from pygme.dynMGE import dynMGE
 from pygme.paramMGE import dynParamMGE
 from pygme.mge_miscfunctions import sample_trunc_r2gauss, sample_trunc_gauss
@@ -69,10 +69,10 @@ class nbodyMGE(dynMGE) :
 
         ## Checking a Few things before starting ########################
         if self.nGauss <= 0 :
-            print 'ERROR: NGAUSS is not right (= %d)' %self.nGauss
+            print('ERROR: NGAUSS is not right (= %d)' %self.nGauss)
             return
         if self.TtruncMass <= 0:
-            print 'ERROR: Mass of the model (= %g) is not right' %self.TtruncMass
+            print('ERROR: Mass of the model (= %g) is not right' %self.TtruncMass)
             return
         opGAS = (self.nGasGauss != 0)
         opSTAR = (self.nStarGauss != 0)
@@ -80,10 +80,10 @@ class nbodyMGE(dynMGE) :
 
         ## Number of Groups -------------------------##
         if self.nGroup == 0:
-            print "ERROR: nGroup is 0"
+            print("ERROR: nGroup is 0")
             return
         if self.nDynComp == 0:
-            print "ERROR: nDynComp is 0"
+            print("ERROR: nDynComp is 0")
             return
 
         ## Some options from kwargs -- INITIALISATION -------------------------------------- ##
@@ -97,8 +97,8 @@ class nbodyMGE(dynMGE) :
         ## Overwrite mode : 'o' or None ------------------------ ##
         self.overwrite = kwargs.get('overwrite', None)
         ## First Realised Particle, and Max number of Particle -- ##
-        self.FirstRealisedPart = kwargs.get('FirstRealisedPart', None)
-        self.nMaxPart = kwargs.get('nMaxPart', None)
+        self.FirstRealisedPart = np.int(kwargs.get('FirstRealisedPart', 0))
+        self.nMaxPart = np.int(kwargs.get('nMaxPart', 0))
         ## Softening -- default is 0 (no softening)--------- ##
         self.Softening = kwargs.get('Softening', 0.0)
         ## Verbose: default is 1 ----------##
@@ -107,7 +107,7 @@ class nbodyMGE(dynMGE) :
 
         ## Softening in pc----------------------------------##
         if self.Softening > 0. :
-            print "WARNING: Softening will be %g (pc) !!!"%(self.Softening)
+            print("WARNING: Softening will be %g (pc) !!!"%(self.Softening))
         self.Softarc = self.Softening / self.pc_per_arcsec   # Softening in Arcseconds
         self.SoftarcMbh = self.Softarc  # best approx for Mbh smoothing
         self.SoftarcMbh2 = self.SoftarcMbh**2
@@ -125,15 +125,15 @@ class nbodyMGE(dynMGE) :
             Xcut = self.mcut
             self.mcutarc = self.mcut / self.pc_per_arcsec
         else :
-            print "ERROR: TruncationMethod should be Cylindre or Ellipsoid. not %s" %(self.TruncationMethod)
+            print("ERROR: TruncationMethod should be Cylindre or Ellipsoid. not %s" %(self.TruncationMethod))
             return
 
         ## We first save the MGE file for archival purposes, as well as the initial parameters
         self.RealisationTime = time.time()
         dest_filename = self.saveMGE + "/" + "%s_"%(str(self.RealisationTime)) + self.MGEname
         if os.path.isfile(dest_filename) & (str(self.overwrite).lower() != "o") :
-            print "ERROR: filename already exists in Archival Directory %s"%(dest_filename)
-            print "       Please use overwrite mode (O) or provide a different output directory (saveMGE)"
+            print("ERROR: filename already exists in Archival Directory %s"%(dest_filename))
+            print("       Please use overwrite mode (O) or provide a different output directory (saveMGE)")
             return
         os_command = "cp %s %s"%(self.fullMGEname, dest_filename)
         os.system(os_command)
@@ -181,7 +181,7 @@ class nbodyMGE(dynMGE) :
 
         ## Now we implement (if betaeps=1) the relation beta = 0.6 * eps
         ## Only if specified
-        if kwargs.has_key('FacBetaEps') :
+        if 'FacBetaEps' in kwargs :
             self.FacBetaEps = kwargs.get('FacBetaEps', 0.6)
             self._init_BetaEps(verbose=True)
 
@@ -232,11 +232,11 @@ class nbodyMGE(dynMGE) :
                 else :
                     self.NkRTheta[self.nRealisedPartCum[i]:self.nRealisedPartCum[i+1]] = np.zeros(self.nRealisedPartGauss[i], dtype=floatMGE) + self.kRTheta[i]
 
-            print "NStar = %d particles Realised over a total of %d" %(self.nRealisedPartStar, self.nPartStar)
-            print "NGas = %d particles Realised over a total of %d" %(self.nRealisedPartGas, self.nPartGas)
-            print "NHalo = %d particles Realised over a total of %d" %(self.nRealisedPartHalo, self.nPartHalo)
+            print("NStar = %d particles Realised over a total of %d" %(self.nRealisedPartStar, self.nPartStar))
+            print("NGas = %d particles Realised over a total of %d" %(self.nRealisedPartGas, self.nPartGas))
+            print("NHalo = %d particles Realised over a total of %d" %(self.nRealisedPartHalo, self.nPartHalo))
             if self.nRealisedPartBH == 1:
-                print "Adding a BH particle of %e Msun" %(self.Mbh)
+                print("Adding a BH particle of %e Msun" %(self.Mbh))
             firstStar = 0                      # index for the first Star particle
             firstGas = lastStar = self.nRealisedPartStar          # index for the first Gas particle - last Star particle
             firstHalo = lastGas = firstGas + self.nRealisedPartGas  # index for the first Halo particle - last Gas particle
@@ -268,22 +268,22 @@ class nbodyMGE(dynMGE) :
             if ComputeV :
                 ###    Integration using gaussian quadrature   ###
                 ### First compute the gaussian quadrature points, and weights
-                print "Starting the derivation of velocities"
+                print("Starting the derivation of velocities")
                 self.muTheta2 = np.zeros(self.nRealisedPart, floatMGE)
                 self.sigz = np.zeros(self.nRealisedPart, floatMGE)
                 self.sigR = np.zeros(self.nRealisedPart, floatMGE)
                 self.sigT = np.zeros(self.nRealisedPart, floatMGE)
                 self.vt = np.zeros(self.nRealisedPart, floatMGE)
                 if verbose :
-                    print "End of memory alloc"
+                    print("End of memory alloc")
 
 ##### OPTION REMOVE     if self.GLOBAL_Sigma == False :
                 ## Doing it in Dynamical groups #################################
                 if verbose :
-                    print "STARTING Local Sigma for each Dynamical Group"
+                    print("STARTING Local Sigma for each Dynamical Group")
                 ## First check that Dynamical Groups are ordered
-                setGauss_Stars = range(self.nStarGauss)
-                setGauss_Halo = range(self.nStarGauss + self.nGasGauss, self.nGauss)
+                setGauss_Stars = list(range(self.nStarGauss))
+                setGauss_Halo = list(range(self.nStarGauss + self.nGasGauss, self.nGauss))
                 setGauss = np.concatenate((setGauss_Stars, setGauss_Halo))
                 nRealisedPart = self.nRealisedPartStar + self.nRealisedPartHalo
                 ## First derive the equations for each INDIVIDUAL DYNAMICAL GROUP for SIGMA_Z
@@ -295,8 +295,8 @@ class nbodyMGE(dynMGE) :
                             continue
                         for j in range(iminG+1, imaxG) :
                             if j not in self.listGaussDynComp[i] :
-                                print "ERROR: Dynamical Group %d should included ordered Gaussians"%(i+1)
-                                print "ERROR: Dynamical Group %d is "%(i+1),self.listGaussDynComp[i]
+                                print("ERROR: Dynamical Group %d should included ordered Gaussians"%(i+1))
+                                print("ERROR: Dynamical Group %d is "%(i+1),self.listGaussDynComp[i])
                                 return
 
                         startI, endI  = self.nRealisedPartCum[iminG], self.nRealisedPartCum[imaxG+1]
@@ -304,13 +304,13 @@ class nbodyMGE(dynMGE) :
                             continue
                         R2comp = R2[startI: endI]
                         Z2comp = Z2[startI: endI]
-                        self.rho, self.rhoT = self._MassDensity(R2comp, Z2comp, ilist=range(iminG,imaxG+1))
+                        self.rho, self.rhoT = self._MassDensity(R2comp, Z2comp, ilist=list(range(iminG,imaxG+1)))
                         self.rhoT = np.where(self.rhoT > 0., self.rhoT, 1.0)
-                        temp1, temp2 = self._sigmaz2_muTheta2_fromR2Z2(R2comp, Z2comp, ilist=range(iminG,imaxG+1))
+                        temp1, temp2 = self._sigmaz2_muTheta2_fromR2Z2(R2comp, Z2comp, ilist=list(range(iminG,imaxG+1)))
                         self.sigz[startI: endI] = sqrt(temp1)
                         self.muTheta2[startI: endI] = temp2
                         if verbose :
-                            print "End of sigz2 and mu2 derivation for Dynamical Group %02d"%(i+1)
+                            print("End of sigz2 and mu2 derivation for Dynamical Group %02d"%(i+1))
 
 #####   REMOVING THIS OPTION - NOT REQUIRED CONSIDERING THE INPUT ASCII FILE WITH DYN GROUPS  ###### else :
 ####    OPTION REMOVED     ######    if verbose :
@@ -363,9 +363,9 @@ class nbodyMGE(dynMGE) :
                     self.vt[firstGas:lastGas] = vt[firstGas:lastGas]
                 if verbose :
                     if GasDisk :
-                        print "End of sigz2 and mu2 derivation for All Stars and Halo particles"
+                        print("End of sigz2 and mu2 derivation for All Stars and Halo particles")
                     else :
-                        print "End of sigz2 and mu2 derivation for All Stars, Gas and Halo particles"
+                        print("End of sigz2 and mu2 derivation for All Stars, Gas and Halo particles")
 
                 ## GAS ######################
                 if opGAS & GasDisk:
@@ -376,18 +376,18 @@ class nbodyMGE(dynMGE) :
                     self.sigT[firstGas:lastGas] = temp + self.SigThetaGas   # sigma Theta for the Gas
                     self.sigz[firstGas:lastGas] = temp + self.SigZGas      # sigma Z for the Gas
                     if verbose :
-                        print "End of sigz2 and mu2 derivation for Gas"
+                        print("End of sigz2 and mu2 derivation for Gas")
 
                 ## Changing the spin of the component
                 self.vt *= self.NSpin
 
                 ## Starting the randomization of velocities using the derived V and Sigma values
-                print "Randomizing the Velocities"
+                print("Randomizing the Velocities")
                 Vescape = self.Vescape(self.Rarc,self.zarc)       # Vescape : cut it if the total velocity is higher
                 Nrejected = 0
                 Nstart = 0
                 Nremain = self.nRealisedPart
-                ind = range(self.nRealisedPart)
+                ind = list(range(self.nRealisedPart))
                 self.Vz = np.zeros(self.nRealisedPart, floatMGE)
                 self.VR = np.zeros(self.nRealisedPart, floatMGE)
                 self.Vtheta = np.zeros(self.nRealisedPart, floatMGE)
@@ -406,10 +406,10 @@ class nbodyMGE(dynMGE) :
                     Nstart = Nstart+nrealised
                     Nremain = ind.size
                     iter += 1
-                    print "NtotalV = %d, Nrealised = %d, Nremaining = %d, Iter = %d" %(Nstart, nrealised, Nremain, iter)
+                    print("NtotalV = %d, Nrealised = %d, Nremaining = %d, Iter = %d" %(Nstart, nrealised, Nremain, iter))
                     Nrejected += Nremain
 
-                print "Rejected (recalculated) points above Vescape: %d" %(Nrejected)
+                print("Rejected (recalculated) points above Vescape: %d" %(Nrejected))
 
                 self.Vx = self.VR * cos(self.theta) - self.Vtheta * sin(self.theta)
                 self.Vy = self.VR * sin(self.theta) + self.Vtheta * cos(self.theta)
@@ -426,10 +426,10 @@ class nbodyMGE(dynMGE) :
         return
 
     def comp_Ep(self) :
-        print "==== Potential Energy ===="
-        print "WARNING: this is a direct computation of the potential energy: can be time consuming!"
+        print("==== Potential Energy ====")
+        print("WARNING: this is a direct computation of the potential energy: can be time consuming!")
         self.Ep = np.zeros(self.nRealisedPart, floatMGE)
-        for i in xrange(self.nRealisedPart) :
+        for i in range(self.nRealisedPart) :
             Ep = np.sum(concatenate((1./sqrt((self.x[:i] - self.x[i])**2 + (self.y[:i] - self.y[i])**2 + (self.z[:i] - self.z[i])**2), 1./sqrt((self.x[i+1:] - self.x[i])**2 + (self.y[i+1:] - self.y[i])**2 + (self.z[i+1:] - self.z[i])**2))),axis=0)
             self.Ep[i] = - Ep * self.Gorig * self.BodMass**2
 
@@ -437,7 +437,7 @@ class nbodyMGE(dynMGE) :
         return
 
     def comp_Ec(self) :
-        print "==== Kinetic Energy ===="
+        print("==== Kinetic Energy ====")
         self.Ec = 0.5 * self.BodMass * (self.Vx**2 + self.Vy**2 + self.Vz**2)
         self.EcT = np.sum(self.Ec,axis=0)
         return
@@ -471,14 +471,14 @@ class nbodyMGE(dynMGE) :
           arcsec: save the positions in arcseconds or pc - default= False (pc)
         """
         if outfilename is None :
-            print "You must specify an output ascii file"
+            print("You must specify an output ascii file")
             return
 
         if outdir is not None :
             outfilename = outdir + outfilename
 
         if os.path.isfile(outfilename) and overwrite==False :  # testing the existence of the file
-            print 'WRITING ERROR: File %s already exists, use overwrite=True if you wish' %outfilename
+            print('WRITING ERROR: File %s already exists, use overwrite=True if you wish' %outfilename)
             return
 
         ascii_file = open(outfilename, mode="w")
@@ -492,7 +492,7 @@ class nbodyMGE(dynMGE) :
             outy = self.y
             outz = self.z
 
-        for i in xrange(self.nRealisedPart) :
+        for i in range(self.nRealisedPart) :
             line = "%12.5e %12.5e %12.5e %12.5e %12.5e %12.5e %12.5e \n" %(outx[i], outy[i], outz[i], self.Vx[i], self.Vy[i], self.Vz[i], self.BodMass[i])
             ascii_file.write(line)
 

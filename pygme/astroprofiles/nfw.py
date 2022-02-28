@@ -52,14 +52,14 @@ class NFWProfile :
 
         if c is None :
             if Mvir is None :
-                print "ERROR: either c or Mvir should be provided"
+                print("ERROR: either c or Mvir should be provided")
                 return [0.]
             self.Mvir = Mvir
             self.c = self.kc * (self.Mvir / 1.e12)**(self.alpha)
         else :
             self.c = c
             if Mvir is not None :
-                print "ERROR: either c or Mvir should be provided, not BOTH"
+                print("ERROR: either c or Mvir should be provided, not BOTH")
                 return [0.]
             self.Mvir = 1.0e12 * (self.c / self.kc)**(1. / self.alpha) 
 

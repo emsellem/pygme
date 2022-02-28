@@ -18,11 +18,11 @@ __date__ = '$Date: 2012/08/02 10:05 $'
 # except ImportError:
 #     print 'There is a problem with importing numpy at initialisation'
 
-import fitn1dgauss, fitn2dgauss, examine_fit
-import fitGaussHermite
+from . import fitn1dgauss, fitn2dgauss, examine_fit
+from . import fitGaussHermite
 
 ## Use mpfit for the non-linear least-squares
-import mpfit
+from . import mpfit
 ## Tring to import lmfit
 try :
     # If it works, can use lmfit version
@@ -32,8 +32,8 @@ try :
     Exist_LMFIT = True
 except ImportError :
     Exist_LMFIT = False
-    print "WARNING: Only mpfit is available an optimiser"
-    print "WARNING: you may want to install lmfit!"
+    print("WARNING: Only mpfit is available an optimiser")
+    print("WARNING: you may want to install lmfit!")
 
 from pygme.mge_miscfunctions import convert_xy_to_polar
 
@@ -47,6 +47,6 @@ try :
     Exist_OpenOpt = True
 except ImportError :
     Exist_OpenOpt = False
-    print "WARNING: OpenOpt was not found so only nnls is available as a linmethod"
+    print("WARNING: OpenOpt was not found so only nnls is available as a linmethod")
 
 __all__ = ['fitn1dgauss', 'fitn2dgauss', 'fitGaussHermite', 'mpfit', 'examine_fit']

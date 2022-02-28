@@ -95,7 +95,7 @@ def read_for_fast(file=None, numbers=[1], type=floatsG, arch=0, verbose=0) :
         return -1, [0,[0],0]   # return the status and add the 2nd+3rd to data
 
     ## Reading the second item: the data
-    dataprop = zip(type,numbers)
+    dataprop = list(zip(type,numbers))
 
     sizetot = 0
     for i in dataprop:
@@ -119,7 +119,7 @@ def read_for_fast(file=None, numbers=[1], type=floatsG, arch=0, verbose=0) :
                     return -2, data+[0]   # return the status and add the 3rd to data
 
     if verbose :
-        print "Read-FAST: Reading %s bytes" %(sizetot)
+        print("Read-FAST: Reading %s bytes" %(sizetot))
 
     ## Reading the third item: the size again
     try :
@@ -129,11 +129,11 @@ def read_for_fast(file=None, numbers=[1], type=floatsG, arch=0, verbose=0) :
         return -3, data
 
     if(data[-1]!=data[0]):
-        print data[1]
-        print 'data[-1]!=data[0]!'
-        print 'data[0]',data[0]
-        print 'data[-1]',data[-1]
-        print 'problem while reading binary file!'
+        print(data[1])
+        print('data[-1]!=data[0]!')
+        print('data[0]',data[0])
+        print('data[-1]',data[-1])
+        print('problem while reading binary file!')
         return -4,data
     return 0, data   # return the status (0=ok) and data
 
@@ -160,7 +160,7 @@ def write_for_fast(file, data, size=[4], arch=0, verbose=0) :
 
     sizetot = np.array([sum(size)],dtype=intG)
     if verbose :
-        print "Write-FAST: Writing %s bytes" %(sizetot)
+        print("Write-FAST: Writing %s bytes" %(sizetot))
     sizetot.tofile(file)
 
     if (sizetot != 0):
@@ -203,7 +203,7 @@ def read_C_fast(file=None, numbers=[1], type=floatsG, arch=0) :
 ##    fakedata.append(0)
 
     ## Reading the second item: the data
-    dataprop = zip(type,numbers)
+    dataprop = list(zip(type,numbers))
 
     for i in dataprop:
         #        try :

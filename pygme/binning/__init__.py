@@ -15,7 +15,7 @@ try:
     import astropy  
     import astropy.io.fits as pyfits
 except ImportError:
-    print 'There is a problem with importing pyfits at initialisation'
+    print('There is a problem with importing pyfits at initialisation')
 #try :
 #    import numpy
 #except ImportError:

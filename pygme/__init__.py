@@ -106,12 +106,12 @@ __date__ = '$Date: 17/09/2012 15:05 $'
 """
     Import the different submodules
 """
-import binning
-import astroprofiles
-import fitting
-import colormaps
-import utils
-from mge import MGE
+from . import binning
+from . import astroprofiles
+from . import fitting
+from . import colormaps
+from . import utils
+from .mge import MGE
 __all__ = ['mge', 'photMGE', 'dynMGE', 'init_partMGE',
            'mge_miscfunctions', 'paramMGE', 'pygadget',
            'pyramses', 'plotsnap', 'rwcfor', 'pyhist', 'snapshot',

@@ -19,6 +19,6 @@ __date__ = '$Date: 2012/03/04 15:05 $'
 # except ImportError:
 #     print 'There is a problem with importing numpy at initialisation'
 
-import nfw
-import sersic
+from . import nfw
+from . import sersic
 __all__ = ['nfw', 'sersic']

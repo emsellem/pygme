@@ -21,9 +21,9 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as mpl
 from matplotlib.figure import Figure
-from matplotlib.colors import normalize
+from matplotlib.colors import Normalize
 
-from pyhist import hist2d_bincount
+from .pyhist import hist2d_bincount
 
 __version__ = '1.0.2 (25 December 2012)'
 # Version 1.0.2 : - i -> inclin
@@ -191,10 +191,10 @@ class PlotSnap(object):
                 self.PAb = PA
                 self.inclinb = inclin
         else:
-            print 'Wrong type for rotastro!'
+            print('Wrong type for rotastro!')
             return
 
-        print 'rotation done!'
+        print('rotation done!')
         return
 
 ###########################################################
@@ -497,9 +497,9 @@ class PlotSnap(object):
             vmax3 = min3+max*diff3
 
             if(view=='density'):
-                mappable=self.p1.imshow(mat[0],interpolation='nearest',extent=(lim[0],lim[1],lim[2],lim[3]),origin='lower',norm=normalize(vmin=vmin1,vmax=vmax1),cmap=cmap)
-                self.p2.imshow(mat[1],interpolation='nearest',extent=(lim[4],lim[5],lim[2],lim[3]),origin='lower',norm=normalize(vmin=vmin2,vmax=vmax2),cmap=cmap)
-                self.p3.imshow(mat[2],interpolation='nearest',extent=(lim[0],lim[1],lim[4],lim[5]),origin='lower',norm=normalize(vmin=vmin3,vmax=vmax3),cmap=cmap)
+                mappable=self.p1.imshow(mat[0],interpolation='nearest',extent=(lim[0],lim[1],lim[2],lim[3]),origin='lower',norm=Normalize(vmin=vmin1,vmax=vmax1),cmap=cmap)
+                self.p2.imshow(mat[1],interpolation='nearest',extent=(lim[4],lim[5],lim[2],lim[3]),origin='lower',norm=Normalize(vmin=vmin2,vmax=vmax2),cmap=cmap)
+                self.p3.imshow(mat[2],interpolation='nearest',extent=(lim[0],lim[1],lim[4],lim[5]),origin='lower',norm=Normalize(vmin=vmin3,vmax=vmax3),cmap=cmap)
             else:
                 d = w/float(n)
                 x = np.arange(lim[0]+d[0]/2,lim[1],d[0])
@@ -848,7 +848,7 @@ class PlotSnap(object):
                 (matm,matv,matvs)=self.calc_mats_kinematics(lim,indxy,n)
             elif (fft==1):
                 if(w[0]!=w[1]):
-                    print '(lim[1]-lim[0]) must be equal to (lim[3]-lim[2]) for the gas if fft=1'
+                    print('(lim[1]-lim[0]) must be equal to (lim[3]-lim[2]) for the gas if fft=1')
 
                 dbinsize = float(n)/w[0]
 
@@ -1074,7 +1074,7 @@ class PlotSnap(object):
         elif(ref=='Fe'):
             k=8
         else:
-            print "ref must be set to 'H' or 'Fe'"
+            print("ref must be set to 'H' or 'Fe'")
             return
 
 #       for i in np.arange(self.nb_elts):
@@ -1095,7 +1095,7 @@ class PlotSnap(object):
 
         norm = self.umass*self.pmass[indr[:]+imin]*self.yields[indr[:]+imin,k].ravel()
         norm = np.concatenate((norm,[0.]))
-        print 'np.bincount(indices)',np.bincount(indices)
+        print('np.bincount(indices)',np.bincount(indices))
         hist_norm = np.bincount(indices,norm)
 #       print 'hist_norm',hist_norm[:]
 
@@ -1107,7 +1107,7 @@ class PlotSnap(object):
 
 
         for i in np.arange(self.nb_elts):
-            print 'i',i
+            print('i',i)
             weights = self.umass*self.pmass[indr[:]+imin]*self.yields[indr[:]+imin,i].ravel()
             weights = np.concatenate((weights,[0.]))
             histind = np.bincount(indices,weights)
@@ -1175,16 +1175,16 @@ class PlotSnap(object):
         selectx = self.pos[selected_ind,0]
         selecty = self.pos[selected_ind,1]
 
-        mats = range(self.nb_elts)
+        mats = list(range(self.nb_elts))
         mats[0] = hist2d_bincount(selectx,selecty,n,(lim[0],lim[1],lim[2],lim[3]),self.pmass[selected_ind]*self.yields[selected_ind,0])
 #       mats[0] = hist2d_bincount(selectx,selecty,n,(lim[0],lim[1],lim[2],lim[3]),self.pmass[selected_ind])
-        print 'before log min max mat[0]',mats[0].min(),mats[0].max()
+        print('before log min max mat[0]',mats[0].min(),mats[0].max())
 #       print 'mats[0]',mats[0]*self.umass
 
 
         for i in range(1,self.nb_elts):
             mats[i] = hist2d_bincount(selectx,selecty,n,(lim[0],lim[1],lim[2],lim[3]),self.pmass[selected_ind]*self.yields[selected_ind,i])
-            print 'before log min max mat[',i,']',mats[i].min(),mats[i].max()
+            print('before log min max mat[',i,']',mats[i].min(),mats[i].max())
 
             if(l==1):
                 mats[i] = mats[i]/(mats[0]*XHsol[i])
@@ -1192,7 +1192,7 @@ class PlotSnap(object):
             if(l==2):
                 mats[i] = mats[i]/(mats[0])
                 mats[i] = 12+np.log10(mats[i])
-            print 'min max mat[',i,']',mats[i].min(),mats[i].max()
+            print('min max mat[',i,']',mats[i].min(),mats[i].max())
 
         m0 = np.where(mats[0]==0,1,0)
 #       m0 = np.where(mats[0]!=0)[0]
@@ -1206,11 +1206,11 @@ class PlotSnap(object):
         #        vmin0 = min0+min*diff0
         #        vmax0 = min0+max*diff0
         if(l==1):
-            print 'after log min max mat[0]',min0,mats[0].max()
+            print('after log min max mat[0]',min0,mats[0].max())
 
 
         p1 = mpl.subplot(331)
-        mappable = p1.imshow(mats[0],interpolation='nearest',extent=(lim[0],lim[1],lim[0],lim[1]),origin='lower',norm=normalize(vmin=vmin0,vmax=vmax0), cmap=cmap)
+        mappable = p1.imshow(mats[0],interpolation='nearest',extent=(lim[0],lim[1],lim[0],lim[1]),origin='lower',norm=Normalize(vmin=vmin0,vmax=vmax0), cmap=cmap)
         f.colorbar(mappable=mappable)
 
 
@@ -1277,7 +1277,7 @@ class PlotSnap(object):
         else:
             simufile = open('fort.499','rb')
 
-        i=long(0)
+        i=int(0)
         t=0. ; q=0. ; tdyn=0. ; tdyncloud=0. ; tmjeans=0. ; tmjeans_cloud=0. ; mass=0.
         pmasstot=0. ; hma=0. ; rayon=0. ; z=0. ; volume=0. ; rhocloud=0. ; surface=0. ; tmucloud=0. ; ucloud=0. ; ilen=0.
 
@@ -1294,12 +1294,12 @@ class PlotSnap(object):
             #                tmjeans_cold = datatemp[6]
             #                tmjeans_cloud = datatemp[7]
         else:
-            print 'one'
+            print('one')
             numbersdata = [1,17]
             typedata = [np.int32,np.float32]
             status, [b1, i,datatemp, b2] = read_for_fast(simufile, numbers=numbersdata, type=typedata, arch=self.arch)
 
-            print 'datatemp',datatemp
+            print('datatemp',datatemp)
 
             t = datatemp[0]
             q = datatemp[1]
@@ -1381,7 +1381,7 @@ class PlotSnap(object):
                 except ValueError:
                     break
 
-        print 'after reading file...'
+        print('after reading file...')
 
         tlim=tpart[-1]
 
@@ -1410,12 +1410,12 @@ class PlotSnap(object):
         #            ;!x.charsize=1.5 & !y.charsize=1.5
         #            tek_color
 
-        print 'np.log10(tlim)',np.log10(tlim)
-        print 'np.log10(2000.)',np.log10(2000.)
+        print('np.log10(tlim)',np.log10(tlim))
+        print('np.log10(2000.)',np.log10(2000.))
 
-        print 'min max tpart)',tpart.min(),tpart.max()
+        print('min max tpart)',tpart.min(),tpart.max())
 
-        print 'tlim',tlim
+        print('tlim',tlim)
 
         if(np.log10(tlim) >= np.log10(2000.)):
             xtitle = 'T (Gyr)'
@@ -1424,7 +1424,7 @@ class PlotSnap(object):
             xtitle = 'T (Myr)'
             tpart=tpart*self.utime/1.e6
 
-        print 'min max tpart)',tpart.min(),tpart.max()
+        print('min max tpart)',tpart.min(),tpart.max())
 
         #        matplotlib.rcParams['axes.facecolor']='w'
         mpl.interactive(False)
@@ -1459,7 +1459,7 @@ class PlotSnap(object):
         iidx=0.
         # ###############
 #      print 'min(qpart),max(qpart)',min(qpart),max(qpart)
-        print 'au dessus de 1.4=', idx.size,'sur',len(qpart)
+        print('au dessus de 1.4=', idx.size,'sur',len(qpart))
 
 
         if(iidx):
@@ -1505,7 +1505,7 @@ class PlotSnap(object):
         mpl.semilogy(tdum,qhist,linestyle='steps',color=(0,1,1),linewidth=2)
         p1.set_xlim(xlim)
 
-        print 'plot 2...'
+        print('plot 2...')
         p2 = mpl.subplot(232,axisbg=axisbg)
         mpl.semilogy(tpart,self.utime*tdynpart/1.e6,',',color=dotcolor)
         mpl.title('Tdyn (Myr) particles')
@@ -1519,7 +1519,7 @@ class PlotSnap(object):
         p2.set_ylim(ylim)
 
 
-        print 'plot 3...'
+        print('plot 3...')
         p3 = mpl.subplot(233,axisbg=axisbg)
         mpl.semilogy(tpart,self.utime*tdyncloudpart/1.e6,',',color=dotcolor)
         mpl.title('Tdyn (Myr) cloud')
@@ -1533,7 +1533,7 @@ class PlotSnap(object):
         p3.set_ylim(ylim)
 
 
-        print 'plot 4...'
+        print('plot 4...')
         p4 = mpl.subplot(234,axisbg=axisbg)
         mpl.plot(tpart,self.umass*mjeanspart,',',color=dotcolor)
         mpl.title('Mass Jeans tot')
@@ -1547,7 +1547,7 @@ class PlotSnap(object):
         p4.set_ylim(ylim)
 
 
-        print 'plot 5...'
+        print('plot 5...')
         p5 = mpl.subplot(235,axisbg=axisbg)
         mpl.plot(tpart,self.umass*mjeanscold,',',color=dotcolor)
         mpl.title('Mass Jeans cold')
@@ -1560,7 +1560,7 @@ class PlotSnap(object):
         p5.set_xlim(xlim)
 
 
-        print 'plot 6...'
+        print('plot 6...')
         p6 = mpl.subplot(236,axisbg=axisbg)
         mpl.plot(tpart,self.umass*mjeanscloud,',',color=dotcolor)
         mpl.title('Mass Jeans GMC')
@@ -1589,12 +1589,12 @@ class PlotSnap(object):
         if(all!=0):
             lim=(-all,all,-all,all,-all,all)
 
-        print 'toto'
+        print('toto')
         ind=self.calculate_select(lim,self.iminn,self.imaxn)[0]
-        print 'ind',ind
+        print('ind',ind)
         tborn_select = self.tborn[ind]
         pmass_select = self.pmass[ind]
-        print 'before delta'
+        print('before delta')
 
 
 ##        delta = (tborn_select.max()-tborn_select.min())/nbin
@@ -1609,10 +1609,10 @@ class PlotSnap(object):
 
         (sfr,bornes) = hist1d(tborn_select[:],nbin,pmass_select[:])
         delta = bornes[1]-bornes[0]
-        print 'bornes[0]',bornes[0]
+        print('bornes[0]',bornes[0])
 
         bornes = bornes * self.utime/1.e6 # en Myr
-        print 'after bornes...'
+        print('after bornes...')
 
         sfr = sfr * self.umass/(delta*self.utime) # en Msol/an
 

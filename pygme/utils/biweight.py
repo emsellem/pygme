@@ -46,7 +46,7 @@ def biweight_mean(dataList, tuningConstant=6.0, verbose=False):
          
     else: 
         if verbose :
-            print """ERROR: biweight_mean() : MAD() returned 0.""" 
+            print("""ERROR: biweight_mean() : MAD() returned 0.""") 
         return None 
      
     return CBI 
@@ -80,7 +80,7 @@ def biweight_sigma(dataList, tuningConstant=9.0, verbose=False):
             uValues.append((item-listMedian)/(C*listMAD)) 
         except ZeroDivisionError: 
             if verbose :
-                print """ERROR: biweight_sigma() : divide by zero error.""" 
+                print("""ERROR: biweight_sigma() : divide by zero error.""") 
             return None 
          
     top=0               # numerator equation (9) Beers et al 
@@ -261,7 +261,7 @@ def robust_sigma(inputData, Zero=False):
 	good = np.where( u2 <= 1.0 )
 	good = good[0]
 	if len(good) < 3:
-		print "WARNING:  Distribution is too strange to compute standard deviation"
+		print("WARNING:  Distribution is too strange to compute standard deviation")
 		sigma = -1.0
 		return sigma
 

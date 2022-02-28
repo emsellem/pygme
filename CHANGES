@@ -1,0 +1,127 @@
+CHANGES
+Version 0.0.1 - July 2014
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Name to pygme instead of pymge
+    - New version pushed onto github
+
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Version 2.3.3 - 15 August 2013
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Added iprint in fit1/2gauss
+    - Changed residual function
+
+Version 2.3.1 - 13 February 2013
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Bug in qParc
+
+Version 2.2.9 - 14 January 2013
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Bug in setting up kRZ fixed
+
+Version 2.2.8 - 6 January 2013
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Try to replace all np.where with masked selection (faster)
+
+Version 2.2.7 - 27 December 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Changed nDynGroup into nDynComp to avoid confusion
+
+Version 2.2.7 - 25 December 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Added biweight in utils
+    - Added sector_binning in binning
+
+Version 2.2.6 - 19 December 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Added FacBetaEps in init_partMGE
+
+Version 2.2.5 - 18 December 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Added GaussHermite fitting routine in the fitting subdirectory
+
+Version 2.2.4 - 16 December 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - fitting routines 1d and 2d with better treatment and tests
+    - Rewrote the structure for realise_Nbody
+    - Added a Gauss-Hermite function to be used in fitting LOSVDs if needed
+
+Version 2.0.4 - 27 June 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - fitting routines 1d and 2d with fixed bugs from Maxime Bois
+Version 2.0.3 - 8 June 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Changed dependency, and included openopt
+--------
+Version 2.0.2 - 5 June 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+
+Version 2.0.1 - May 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Many functions reshuffling
+    - Cleaning of the code
+    
+Version 2.0.0 - 3 March 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - 3 new submodules (binning, fitting, astroprofiles)
+
+Version 1.9.9 - 9 January 2012
+    Important Changes
+    ~~~~~~~~~~~~~~~~
+    - Change of the name to pyMGE
+    - Cleaning and documentation in the routines
+
+Version 1.9.2 - 2 September 2011
+    Important Changes
+    ~~~~~~~~~~~~~~~~~
+    - Cleaning: using kwargs in pymge
+    - Removed many options which were unnecessary
+    - Many changes of option names to make them more sensible
+
+Version 1.9.0 - 30 August 2011
+    Important Changes
+    ~~~~~~~~~~~~~~~~~
+    - The Dynamical Group were introduced
+    - We now include a second Integer in the NPARTGROUP to specify how many
+    particles we wish (total) and how many to realise.
+    - We can now specify the number of particles we wish to realise for a
+    specific model, and where to start. This should allow large simulations to
+    be realised in chunks. This uses the keywords FirstRealisedPart and
+    nMaxPart.
+
+    Bug fixes
+    ~~~~~~~~~
+    - the expression for black holes has been changed at large radii (coefficient was wrong)
+
+Version 1.7.8 - 3 August 2011
+    Important Changes
+    ~~~~~~~~~~~~~~~~~
+    - The derivation of QToomre was fixed
+
+    New Features
+    ~~~~~~~~~~~~
+
+    Bug fixes
+    ~~~~~~~~~
+    - For QToomre (in pymge) we now use Sigma_R instead of Sigma_z
+
+Version 1.0 - August 2007
+    - Version with gadget compatibility
+    - Plotting compabibility
+
+Version 0.1 - July 2005
+    - First tests 

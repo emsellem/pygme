@@ -16,11 +16,11 @@ import numpy as np
 import os
 import string
 
-import rwcfor
-from rwcfor import intG, floatG, floatsG
-from rwcfor import sizefloatsG, sizeintsG, sizefloatG, sizeintG
+from . import rwcfor
+from .rwcfor import intG, floatG, floatsG
+from .rwcfor import sizefloatsG, sizeintsG, sizefloatG, sizeintG
 
-from mge_miscfunctions import print_msg
+from .mge_miscfunctions import print_msg
 
 from pygme.snapshot import SnapShot
 
@@ -67,7 +67,7 @@ class snap_gadget(SnapShot):
             if os.path.isfile(args[0]):
                 self.read(*args)
             else :
-                print 'Path %s' %(args[0]), ' does not exists, sorry!'
+                print('Path %s' %(args[0]), ' does not exists, sorry!')
                 return
         else :
             self.indices_sim(mode=0)
@@ -89,10 +89,10 @@ class snap_gadget(SnapShot):
         """
         ##=============== Checking input names
         if file is None :
-            print 'No file name provided!'
+            print('No file name provided!')
             return
         if not os.path.isfile(file):
-            print 'Path %s' %(file), ' does not exist, sorry!'
+            print('Path %s' %(file), ' does not exist, sorry!')
             return
 
         try:
@@ -105,22 +105,22 @@ class snap_gadget(SnapShot):
                 namefile = file
             simufile = open(dirfile+namefile,'rb')
         except IOError:
-            print "Can\'t open file for reading."
+            print("Can\'t open file for reading.")
             return
 
-        if verbose: print 'Fichier a ouvrir= ',file
+        if verbose: print('Fichier a ouvrir= ',file)
         ##=============== Checking input binary format and architecture
         ##                as well as the possible presence of a live halo
         b1 = np.fromfile(simufile,dtype=np.int32,count=1)[0]
-        if verbose : print "b1 = ", b1
+        if verbose : print("b1 = ", b1)
         if b1 == 256:
-            print ' DIGITAL, LINUX and WINDOWS format...'
+            print(' DIGITAL, LINUX and WINDOWS format...')
             self.arch = 0
         elif b1 == 65536:
-            print ' NEC and IBM format...'
+            print(' NEC and IBM format...')
             self.arch = 1
         else:
-            print ' Unsupported format...'
+            print(' Unsupported format...')
             return
 
         # No difference when opening with arch = 0 et arch = 1
@@ -153,25 +153,25 @@ class snap_gadget(SnapShot):
         self.ntot = np.sum(self.npart,axis=None)
         self.indices_sim()
 
-        print 't =',self.t                            # Time of the snapshot
+        print('t =',self.t)                            # Time of the snapshot
         if verbose :
-            print ' TOTAL particles = ', self.ntot, '\n', \
+            print(' TOTAL particles = ', self.ntot, '\n', \
                   ' GAS particles = ', self.ngas, '\n', \
                   ' HALO particles = ', self.nhalo, '\n', \
                   ' DISK particles = ', self.ndisc, '\n', \
                   ' BULGE particles = ', self.nbulge, '\n', \
                   ' NEW particles = ', self.nform, '\n', \
                   ' DUST particles = ', self.ndust, '\n', \
-                  ' MassPart = ', self.masspart, '\n'
+                  ' MassPart = ', self.masspart, '\n')
 
         # ####################################
         #               GAS
         # ####################################
         if self.ntot == 0:
-            print 'ERROR: ntot is 0, no way to go on ...'
+            print('ERROR: ntot is 0, no way to go on ...')
             return
         if self.ngas == 0:
-            if verbose: print 'WARNING: ngas=0, no gas here ... '
+            if verbose: print('WARNING: ngas=0, no gas here ... ')
 
         # ####################################
         # POSITIONS
@@ -182,7 +182,7 @@ class snap_gadget(SnapShot):
         print_msg("Reading positions", status)
 
         self.pos = (self.pos).reshape((self.ntot,self.dim))
-        if verbose: print 'pos',self.pos.shape      ### VERBOSE ###
+        if verbose: print('pos',self.pos.shape)      ### VERBOSE ###
 
         # ####################################
         # VELOCITIES
@@ -191,7 +191,7 @@ class snap_gadget(SnapShot):
         self.vel = (self.vel).reshape((self.ntot,self.dim))
         print_msg("Reading velocities", status)
 
-        if verbose: print 'vel',self.vel.shape     ### VERBOSE ###
+        if verbose: print('vel',self.vel.shape)     ### VERBOSE ###
 
         # ####################################
         # IDs
@@ -202,7 +202,7 @@ class snap_gadget(SnapShot):
         print_msg("Reading IDs", status)
 
         self.id = np.array(self.id).reshape(self.ntot,)
-        if verbose: print 'id',self.id.shape     ### VERBOSE ###
+        if verbose: print('id',self.id.shape)     ### VERBOSE ###
 
         # ####################################
         # MASSES
@@ -214,7 +214,7 @@ class snap_gadget(SnapShot):
         else :
             Nwithmass = 0
 
-        if verbose : print "Nwithmass == %d" %(Nwithmass)
+        if verbose : print("Nwithmass == %d" %(Nwithmass))
         if Nwithmass != 0 :
             numbersdata = [Nwithmass]
             typedata = [floatsG]
@@ -301,20 +301,20 @@ class snap_gadget(SnapShot):
         """
         ##=============== Checking input names and existence of file
         if file is None :
-            print 'No file name provided!'
+            print('No file name provided!')
             return
 
         if  os.path.isfile(file) :
             if mode == "O" or  mode == "o":
-                print 'WARNING: Path %s' %(file), ' already exists! Will be overwritten'
+                print('WARNING: Path %s' %(file), ' already exists! Will be overwritten')
             else :
-                print 'ERROR: Path %s' %(file), " already exists and mode is not 'O' (for Overwrite)!"
+                print('ERROR: Path %s' %(file), " already exists and mode is not 'O' (for Overwrite)!")
                 return
 
         try:
             simufile = open(file,'wb')
         except IOError:
-            print "Can\'t open file for writing."
+            print("Can\'t open file for writing.")
             return
 
         ##=============== Checking input binary format and architecture
@@ -322,12 +322,12 @@ class snap_gadget(SnapShot):
         if arch is None:
             self.arch = architecture[self.arch][0]
         else :
-            self.arch = string.upper(arch)
+            self.arch = arch.upper()
 
-        if verbose: print 'File to write = ',file
+        if verbose: print('File to write = ',file)
         ##=============== Init the number of dimensions and other input numbers
         if self.dim != 3 :
-            print "ERROR: can only support Ndimensions = 3 (see self.dim)"
+            print("ERROR: can only support Ndimensions = 3 (see self.dim)")
             return
 
         ## Writing the first few numbers
@@ -378,10 +378,10 @@ class snap_gadget(SnapShot):
         # POSITIONS
         # ####################################
         sizedata = [self.ntot*self.dim*sizefloatsG]
-        if verbose: print 'pos',self.temppos.shape      ### VERBOSE ###
+        if verbose: print('pos',self.temppos.shape)      ### VERBOSE ###
         datatemp = (np.ravel(self.temppos / self.udist)).astype(floatsG) # going to PMSPH units from kpc
         if len(datatemp) != (self.ntot*self.dim) :
-            print "ERROR: pos does not have the right size (self.ntot*self.dim)"
+            print("ERROR: pos does not have the right size (self.ntot*self.dim)")
             return
 
         status = rwcfor.write_for_fast(simufile, data=[datatemp], size=sizedata, arch=self.arch)
@@ -389,10 +389,10 @@ class snap_gadget(SnapShot):
         # ####################################
         # VELOCITIES
         # ####################################
-        if verbose: print 'vel',self.tempvel.shape     ### VERBOSE ###
+        if verbose: print('vel',self.tempvel.shape)     ### VERBOSE ###
         datatemp = (np.ravel(self.tempvel / self.uvelo)).astype(floatsG)  # going to PMSPH units from km/s
         if len(datatemp) != (self.ntot*self.dim) :
-            print "ERROR: vel does not have the right size (self.ntot*self.dim)"
+            print("ERROR: vel does not have the right size (self.ntot*self.dim)")
 
         status = rwcfor.write_for_fast(simufile, data=[datatemp], size=sizedata, arch=self.arch)
 
@@ -400,10 +400,10 @@ class snap_gadget(SnapShot):
         # IDs
         # ####################################
         sizedata = [self.ntot*sizeintG]
-        if verbose: print 'ID',self.tempid.shape     ### VERBOSE ###
+        if verbose: print('ID',self.tempid.shape)     ### VERBOSE ###
         datatemp = (np.ravel(self.tempid)).astype(intG)
         if len(datatemp) != (self.ntot) :
-            print "ERROR: ID does not have the right size (self.ntot)"
+            print("ERROR: ID does not have the right size (self.ntot)")
 
         status = rwcfor.write_for_fast(simufile, data=[datatemp], size=sizedata, arch=self.arch)
 
@@ -439,7 +439,7 @@ class snap_gadget(SnapShot):
         if self.ngas != 0:
             ## Writing out the physical properties for the gas
             if len(self.h) != self.ngas or len(self.u) != self.ngas or len(self.rho) != self.ngas :
-                print "ERROR: h/u/rho do not have the right size (ngas)"
+                print("ERROR: h/u/rho do not have the right size (ngas)")
                 return
 
             sizedata = [self.ngas*sizefloatsG]
@@ -450,7 +450,7 @@ class snap_gadget(SnapShot):
             status = rwcfor.write_for_fast(simufile, data=[datatemp], size=sizedata, arch=self.arch)
             datatemp = floatsG(self.h)
             status = rwcfor.write_for_fast(simufile, data=[datatemp], size=sizedata, arch=self.arch)
-            if status != 0 : print "Warning, status is", status
+            if status != 0 : print("Warning, status is", status)
         simufile.close() # Closing the main file
 
         return

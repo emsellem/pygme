@@ -148,7 +148,7 @@ def comp_moments(x, y, val, weights=None,lim=[-1,1,-1,1],nXY=10):
     if np.size(nXY) == 1 :
         nXY = np.zeros(2, dtype=np.int) + nXY
     elif np.size(nXY) != 2 :
-        print "ERROR: dimension of n should be 1 or 2"
+        print("ERROR: dimension of n should be 1 or 2")
         return 0,0,0,0,0
 
     if weights is None : weights = np.ones_like(x)
@@ -205,7 +205,7 @@ def comp_losvd(x, y, v, weights=None, limXY=[-1,1,-1,1], nXY=10, limV=[-1000,100
     if np.size(nXY) == 1 :
         nXY = np.zeros(2, dtype=np.int) + nXY
     elif np.size(nXY) != 2 :
-        print "ERROR: dimension of n should be 1 or 2"
+        print("ERROR: dimension of n should be 1 or 2")
         return 0,0,0,0,0
 
     ## Defining the bins

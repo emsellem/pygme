@@ -1,0 +1,74 @@
+Installing pymge
+++++++++++++++++
+(installation file inspired from the one in APlpy)
+
+Installation Instructions
+=========================
+
+numpy and matplotlib
+--------------------
+
+pymge requires numpy, and matplotlib-0.99 or later.
+
+You can download the required packages from the numpy and matplotlib
+home pages and install these using the standard installation method,
+for example:
+
+    tar xvzf numpy-1.3.0.tar.gz 
+    cd numpy-1.3.0
+    sudo python setup.py install
+
+Be sure to install numpy before matplotlib! If you run into complications installing any of these packages you should go to the numpy and/or matplotlib mailing lists for help.
+
+pyfits
+------
+
+In order to read/write FITS files, pymge requires a fits r/w module.
+It is now provided via the astropy.io.fits module.
+
+pymge
+=====
+
+New pymge Install
+-----------------
+
+If you have easy_install installed, you can install pysym by simply typing
+
+    easy_install aplpy
+
+Otherwise, you can install pysym by downloading the latest available
+tar file from 
+
+???????????????????????????????/
+
+and using the standard installation method:
+
+    tar -xvzf pymge.x.tar.gz
+    cd pymge.x sudo
+    sudo python setup.py install
+
+
+Updating pymge
+--------------
+
+If you have easy_install, you can update pymge to the latest version by
+simply typing
+
+    easy_install -U pymge
+
+
+
+Links to dependencies
+=====================
+
+    Required
+
+    - matplotlib 0.99 or later
+      http://matplotlib.sourceforge.net/
+
+    - numpy 1.3.0 or later
+      http://numpy.scipy.org/
+
+    - pyfits 2.1 or later
+      http://www.stsci.edu/resources/software_hardware/pyfits
+

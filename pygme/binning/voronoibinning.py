@@ -1,17 +1,14 @@
 #!/usr/bin/env python
 #
-################################# WARNING ###########################
-# THIS CODE IS UNDER - RAPID - DEVELOPMENT and will certainly evolved
-#   on a timescale of Days. Stay tuned.
-############################## END of WARNING #######################
-#
-#
 # -----------------------------------------------------------------------------
+# Version 0.0.6 - August 2015 - Included Penalisation on binning, default M=1
 # Version 0.0.5 - August 2015 - Change np.average to np.ma.average to avoid Zero
 #                               Error message 
 # Version 0.0.4 - August 2015 - Added the use of griddata and masks as an option
 # Version 0.0.3 - April 2015 - Fixed small bug in the type of data
-# Version 0.0.2
+# Version 0.0.2 - Sep  2012 -  Fixed small bug in output format
+# Version 0.0.1 - Jan 2011 - Going from C (Copin/Emsellem) and idl (Cappellari) to python
+#
 # Copyright (C) 2011  Eric Emsellem
 #
 #                          Voronoi binning
@@ -19,20 +16,20 @@
 # Code taking, as an input a 2D grid of data+noise points and rebin them
 #   to reach a target Signal to Noise.
 #
-# Python Version developed in 2011 - 2012
-#
-# Freely inspired by codes written by Yannick Copin, Michele Cappellari
-# First version was written in C (mostly by Yannick Copin)
-# Expanded version written in idl by Michele Cappellari and distributed on the web
-#
-# This version is closely inspired by the idl version of Michele Cappellari
-#    and rewritten, expanded to follow python rules
+# Freely inspired by codes written by Yannick Copin and Michele Cappellari
 # Following the paper by Cappellari, Copin, 2003, MNRAS 342, 345
+# 
+# From first version written in C in 2000 - 2003
+# (mostly by Yannick Copin in the C-Lyon-lib, with modifications by Eric Emsellem)
+# Programmes accret_table.c, bin_makeima.c, pack_makeima.c, pack_tiger.c, pack_table.c
+# 
+# Expanded version written in idl by Michele Cappellari and distributed on the web
+# And later translated in Python by Michele Cappellari (also on his web)
 #
-# This code is normally distributed as part of the pygme module 
-#                       Eric Emsellem, 2011
+# The present version was closely inspired by the idl version of Michele Cappellari
+#   rewritten and expanded to follow python rules - thanks to its availability
+#   on the web.
 #
-# Distributed under the terms of the BSD License.
 # -----------------------------------------------------------------------------
 import numpy as np
 from numpy import sum, sqrt, min, max, any
@@ -55,6 +52,15 @@ class ModuleError(Error):
 
     def __str__(self) :
         return repr(self.msg)
+
+def Penalisation_Factor(Nbins=1, M=1.0) :
+    """ Penalisation factor to be used when 
+    wishing to include systematics in Datacubes
+    A standard value is around 20
+
+    Default is 1, namely -> no change
+    """
+    return sqrt(M * Nbins / (M + Nbins - 1.0))
 
 def bin2d_roundness(x, y, size) :
     """ Return the roundness as defined in Cappellari \& Copin 2003
@@ -82,7 +88,7 @@ def derive_pixelsize(x, y, verbose=0) :
         pixelsize = np.minimum(mindist, pixelsize)
     pixelsize = np.sqrt(pixelsize)
     if verbose:
-        print "Pixelsize will be: ", pixelsize
+        print("Pixelsize will be: ", pixelsize)
     return pixelsize
 
 def guess_regular_grid(xnodes, ynodes, pixelsize=None) :
@@ -134,17 +140,17 @@ def derive_unbinned_field(xnodes, ynodes, data, xunb=None, yunb=None, mask=None,
     ## If scipy is True (default) use griddata
     if scipy :
         import scipy
-        unbinned_data[-mask_ravel] = scipy.interpolate.griddata((xnodes_rav, ynodes_rav), data_rav, 
-             (x_rav[-mask_ravel], y_rav[-mask_ravel]), method='nearest')
+        unbinned_data[~mask_ravel] = scipy.interpolate.griddata((xnodes_rav, ynodes_rav), data_rav, 
+             (x_rav[~mask_ravel], y_rav[~mask_ravel]), method='nearest')
     ## Otherwise loop through the points
     else :
-        interm_data = np.zeros_like(x_rav[-mask_ravel])
-        sizein_M = len(x_rav[-mask_ravel])
+        interm_data = np.zeros_like(x_rav[~mask_ravel])
+        sizein_M = len(x_rav[~mask_ravel])
         sizeout = len(xnodes_rave)
-        indclosestBin = np.argmin(dist2(x_rav[-mask_ravel].reshape(1,sizein_M),
-           y_rav[-mask_ravel].reshape(1, sizein_M), xnodes_rav.reshape(sizeout, 1),
+        indclosestBin = np.argmin(dist2(x_rav[~mask_ravel].reshape(1,sizein_M),
+           y_rav[~mask_ravel].reshape(1, sizein_M), xnodes_rav.reshape(sizeout, 1),
            ynodes_rav.reshape(sizeout, 1)), axis=0)
-        unbinned_data[-mask_ravel] = data_rav[indclosestBin]
+        unbinned_data[~mask_ravel] = data_rav[indclosestBin]
 
 #         for i in xrange(len(x_rav[-mask_ravel])) :
 #             indclosestBin = argmin(dist2(x_rav[-mask_ravel][i], y_rav[-mask_ravel][i], xnodes_rav, ynodes_rav))
@@ -159,7 +165,7 @@ class bin2D :
     Class for Voronoi binning of a set of x and y coordinates
     using given data and potential associated noise
     """
-    def __init__(self, xin, yin, data, noise=None, targetSN=1.0, pixelsize=None, method="Voronoi", cvt=1, wvt=0) :
+    def __init__(self, xin, yin, data, noise=None, targetSN=1.0, pixelsize=None, method="Voronoi", cvt=1, wvt=0, M_Penalise=1.0) :
         self.xin = xin.ravel()
         self.yin = yin.ravel()
         self.data = data.ravel()
@@ -179,6 +185,7 @@ class bin2D :
         self.cvt = cvt
         self.wvt = wvt
         self.scale = 1.0
+        self.M_Penalise = M_Penalise
 
         self._check_input()
         self._check_data()
@@ -187,14 +194,14 @@ class bin2D :
         """ 
         Warning message for 2D Binning class
         """
-        print "WARNING [2D Binning]: %s"%(text)
+        print("WARNING [2D Binning]: %s"%(text))
 
     def _error(self, text) :
         """ 
         Error message for 2D Binning class
         Exit after message
         """
-        print "ERROR [2D Binning]: %s"%(text)
+        print("ERROR [2D Binning]: %s"%(text))
         return
 
     def _check_input(self) :
@@ -245,10 +252,17 @@ class bin2D :
             self.noiseb = self.noise
             self.SNb = np.where(self.noiseb > 0, self.datab/self.noiseb, 0.0)
 
+    ### Signal to Noise ============================================
+    def SN_indexArray(self, listbins) :
+        """ Return the SN array given an array of data values and noise values
+        taking into account a list of bins
+        This includes the Penalisation function with the M factor given in self
+        """
+        return sum(self.data[listbins]) / (Penalisation_Factor(len(listbins), self.M_Penalise) * sqrt(sum(self.noise[listbins])**2))
+
     ### Do Quadtree binning ============================================
     def bin_quadtree(self, verbose=1) :
-        """ 
-        Actually do the Quadreee binning if that method is chosen
+        """ Actually do the Quadreee binning if that method is chosen
         Not implemented YET
         """
         pass
@@ -268,7 +282,7 @@ class bin2D :
         for ind in range(1,self.npix+1) :  ## Running over the index of the Voronoi BIN
             ## Only one pixel at this stage
             currentSN = self.SN[currentBin]
-            if verbose : print "Bin %d"%(ind)
+            if verbose : print("Bin %d"%(ind))
 
             self.status[currentBin] = ind   # only one pixel at this stage
             ## Barycentric centroid for 1 pixel...
@@ -303,7 +317,7 @@ class bin2D :
 
                 ## Transfer new SN to current value
                 oldSN = currentSN
-                currentSN = sum(self.data[possibleBin]) / sqrt(sum(self.noise[possibleBin]**2))
+                currentSN = self.SN_indexArray(possibleBin)
 
                 ##++++++++++++++++++++++++++++++++++++++++++
                 ## Test the new potential Bin
@@ -375,7 +389,7 @@ class bin2D :
             listbins = np.where(self.status==self.statusnode[i])[0]
             ## Centroid of the node
             self.xnode[i], self.ynode[i] = mean(self.xin[listbins]), mean(self.yin[listbins])
-            self.SNnode[i] = sum(self.data[listbins])/sqrt(sum(self.noise[listbins]**2))
+            self.SNnode[i] = self.SN_indexArray(listbins)
             self.listbins.append(listbins)
 
     ### Compute WEIGHTED centroid of bins ======================================
@@ -400,7 +414,7 @@ class bin2D :
             listbins = np.where(self.status==self.statusnode[i])[0]
             ## Weighted centroid of the node
             self.xnode[i], self.ynode[i] = np.ma.average(self.xin[listbins], weights=self.weight[listbins]), np.ma.average(self.yin[listbins], weights=self.weight[listbins])
-            self.SNnode[i] = sum(self.data[listbins])/sqrt(sum(self.noise[listbins]**2))
+            self.SNnode[i] = self.SN_indexArray(listbins)
             self.listbins.append(listbins)
 
     ### Assign bins ============================================
@@ -409,12 +423,12 @@ class bin2D :
         Assign the bins when the nodes are derived With Scaling factor
         """
         if scale is not None: self.scale = scale
-        if sel_pixels is None : sel_pixels = range(self.xin.size)
+        if sel_pixels is None : sel_pixels = list(range(self.xin.size))
         for i in sel_pixels :
             minind = argmin(dist2(self.xin[i], self.yin[i], self.xnode, self.ynode, scale=self.scale))
             self.status[i] = self.statusnode[minind]
             if verbose :
-                print "Pixel ",  self.status[i], self.xin[i], self.yin[i], self.xnode[minind], self.ynode[minind]
+                print("Pixel ",  self.status[i], self.xin[i], self.yin[i], self.xnode[minind], self.ynode[minind])
 
         ## reDerive the centroid
         self.bin2d_centroid()
@@ -462,24 +476,24 @@ class bin2D :
         if cvt is not None : self.cvt = cvt
         if wvt is not None : self.wvt = wvt
 
-        print "=================="
-        print "Accreting Bins... "
+        print("==================")
+        print("Accreting Bins... ")
         self.bin2d_accretion()
-        print "          ...Done"
-        print "===================="
-        print "Reassigning Bins... "
+        print("          ...Done")
+        print("====================")
+        print("Reassigning Bins... ")
         self.bin2d_centroid()
         ## Get the bad pixels, not assigned and assign them
         badpixels = np.where(self.status == 0)[0]
         self.bin2d_assign_bins(badpixels)
-        print "            ...Done"
-        print "===================="
+        print("            ...Done")
+        print("====================")
         if self.cvt :
-            print "==========================="
-            print "Modified Lloyd algorithm..."
+            print("===========================")
+            print("Modified Lloyd algorithm...")
             self.bin2d_cvt_equal_mass()
-            print "%d iterations Done."%(self.niter)
-            print "==========================="
+            print("%d iterations Done."%(self.niter))
+            print("===========================")
         else : self.scale = 1.0
         ## Final nodes weighted centroids after assigning to the final nodes
         self.bin2d_assign_bins()
@@ -565,6 +579,6 @@ class bin2D :
             xout[i] = np.ma.average(self.xin.ravel()[listbins], weights=datain[listbins])
             yout[i] = np.ma.average(self.yin.ravel()[listbins], weights=datain[listbins])
             dataout[i] = mean(datain[listbins])
-            SNout[i] = sum(datain[listbins])/sqrt(sum(noisein[listbins]**2))
+            SNout[i] = self.SN_indexArray(listbins)
 
         return xout, yout, dataout, SNout

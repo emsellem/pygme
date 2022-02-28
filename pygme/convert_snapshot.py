@@ -55,7 +55,7 @@ def snapshot_to_other(snapshot, type="GADGET2") :
     elif (type == "RAMSES") :
         snap = snap_ramses()
     else :
-        print "ERROR: type not recognised: %s - Should be GADGET2 or RAMSES!" %(type)
+        print("ERROR: type not recognised: %s - Should be GADGET2 or RAMSES!" %(type))
         return
 
     ## Initialisation of required parameters
@@ -162,7 +162,7 @@ def mge_to_snapshot(MGEmodel, verbose=0) :
     snap.ntot = MGEmodel.nRealisedPart
     snap.ngas0 = MGEmodel.nRealisedPartGas
     snap.nsta = MGEmodel.nRealisedPartStar
-    snap.nbulge = MGEmodel.nRealisedPartStar / 3
+    snap.nbulge = MGEmodel.nRealisedPartStar // 3
     snap.ndisc = MGEmodel.nRealisedPartStar - snap.nbulge
     snap.nsta0 = MGEmodel.nRealisedPartStar
 
@@ -223,7 +223,7 @@ def mge_to_gadget(MGEmodel, filename=None,  mode="O", arch="Linux") :
     ## Convert into a gadget snapshot
     snap_gadget = snapshot_to_other(snap, type="GADGET2")
     ## Write the Gadget dat file
-    print "Writing the Gadget file : %s"%(filename)
+    print("Writing the Gadget file : %s"%(filename))
     snap_gadget.write(file=filename, mode=mode, arch=arch)
 
 ##################################################################
@@ -240,5 +240,5 @@ def mge_to_ramses(MGEmodel, dirout=None, Suffix=None, mgefile=None, mode="O", ve
     ## Convert into a RAMSES snapshot
     snap_ramses = snapshot_to_other(snap, type="RAMSES")
     ## Write the RAMSES dat file
-    print "Writing the RAMSES files with Suffix %s"%(Suffix)
+    print("Writing the RAMSES files with Suffix %s"%(Suffix))
     snap_ramses.write(Suffix=Suffix, dirout=dirout, mgefile=mgefile, verbose=verbose, mode=mode)

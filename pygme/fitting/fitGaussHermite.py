@@ -37,10 +37,10 @@ try :
     Exist_LMFIT = True
 except ImportError :
     Exist_LMFIT = False
-    print "WARNING: Only mpfit is available an optimiser"
-    print "WARNING: you may want to install lmfit!"
-    print "WARNING: The routine will therefore use mpfit"
-    print "         Available from pygme.fitting"
+    print("WARNING: Only mpfit is available an optimiser")
+    print("WARNING: you may want to install lmfit!")
+    print("WARNING: The routine will therefore use mpfit")
+    print("         Available from pygme.fitting")
 ## Use mpfit for the non-linear least-squares
 ## if lmfit is not there
 
@@ -201,10 +201,10 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
 
     """
     ## Set up some default parameters for mpfit
-    if "xtol" not in fcnargs.keys() : fcnargs["xtol"] = 1.e-10
-    if "gtol" not in fcnargs.keys() : fcnargs["gtol"] = 1.e-10
-    if "ftol" not in fcnargs.keys() : fcnargs["ftol"] = 1.e-10
-    if "quiet" not in fcnargs.keys() : fcnargs["quiet"] = True
+    if "xtol" not in list(fcnargs.keys()) : fcnargs["xtol"] = 1.e-10
+    if "gtol" not in list(fcnargs.keys()) : fcnargs["gtol"] = 1.e-10
+    if "ftol" not in list(fcnargs.keys()) : fcnargs["ftol"] = 1.e-10
+    if "quiet" not in list(fcnargs.keys()) : fcnargs["quiet"] = True
 
     ## If no coordinates is given, create them and use pixel as a unit
     ## The x axis will be from 0 to N-1, N being the number of data points
@@ -223,14 +223,14 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     if isinstance(params,np.ndarray): params=params.tolist()
     if params is not None : 
         if (len(params) > degGH): 
-            print "ERROR: input parameter array (params) is larger than expected"
-            print "ERROR: It is %d while it should be smaller or equal to %s (degGH)", len(params), degGH
+            print("ERROR: input parameter array (params) is larger than expected")
+            print("ERROR: It is %d while it should be smaller or equal to %s (degGH)", len(params), degGH)
             return 0., 0., 0., 0.
         elif (len(params) < degGH): 
             if verbose :
-                print "WARNING: Your input parameters do not fit the Degre set up for the GH moments"
-                print "WARNING: the given value of degGH (%d) will be kept ", degGH
-                print "WARNING: A guess will be used for the input fitting parameters "
+                print("WARNING: Your input parameters do not fit the Degre set up for the GH moments")
+                print("WARNING: the given value of degGH (%d) will be kept ", degGH)
+                print("WARNING: A guess will be used for the input fitting parameters ")
 
     default_params= np.zeros(degGH, dtype=np.float64) + 0.02
     default_params[:2] = momProf[1:]
@@ -266,31 +266,31 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     ## Printing routine for mpfit
     ## -------------------------------------------------------------------------------------
     def mpfitprint(mpfitfun, p, iter, fnorm, functkw=None, parinfo=None, quiet=0, dof=None) :
-        print "Chi2 = ", fnorm
+        print("Chi2 = ", fnorm)
     ## -------------------------------------------------------------------------------------
 
     ## Information about the parameters
     parnames = {0:"V", 1:"S"}
-    for i in xrange(2, degGH) : parnames[i] = "H_%02d"%(i+1)
+    for i in range(2, degGH) : parnames[i] = "H_%02d"%(i+1)
 
     ## Information about the parameters
     if veryverbose :
-        print "--------------------------------------"
-        print "GUESS:            "
-        print "------"
-        for i in xrange(degGH) :
-            print " %s :  %8.3f"%(parnames[i], params[i])
-        print "--------------------------------------"
+        print("--------------------------------------")
+        print("GUESS:            ")
+        print("------")
+        for i in range(degGH) :
+            print(" %s :  %8.3f"%(parnames[i], params[i]))
+        print("--------------------------------------")
 
     parinfo = [ {'n':ii, 'value':params[ii], 'limits':[minpars[ii],maxpars[ii]], 
         'limited':[limitedmin[ii],limitedmax[ii]], 'fixed':fixed[ii], 
-        'parname':parnames[ii], 'error':ii} for ii in xrange(len(params)) ]
+        'parname':parnames[ii], 'error':ii} for ii in range(len(params)) ]
 
     ## Fit with mpfit of q, sigma, pa on xax, yax, and data (+err)
     fa = {'x': xax, 'data': data, 'err':err}
 
     if verbose: 
-        print "------ Starting the minimisation -------"
+        print("------ Starting the minimisation -------")
     result = mpfit(mpfitfun, functkw=fa, iterfunct=mpfitprint, nprint=1, parinfo=parinfo, **fcnargs) 
     ## Recompute the best amplitudes to output the right parameters
     ## And renormalising them
@@ -303,17 +303,17 @@ def fitGH_mpfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
         raise Exception(result.errmsg)
 
     if verbose :
-        print "====="
-        print "FIT: "
-        print "================================="
-        print "        I         V         Sig   "
-        print "   %8.3f  %8.3f   %8.3f "%(Ibestpar_array[0], Ibestpar_array[1], Ibestpar_array[2])
-        print "================================="
-        for i in xrange(2, degGH) :
-            print "GH %02d: %8.4f "%(i+1, Ibestpar_array[i+1])
-        print "================================="
+        print("=====")
+        print("FIT: ")
+        print("=================================")
+        print("        I         V         Sig   ")
+        print("   %8.3f  %8.3f   %8.3f "%(Ibestpar_array[0], Ibestpar_array[1], Ibestpar_array[2]))
+        print("=================================")
+        for i in range(2, degGH) :
+            print("GH %02d: %8.4f "%(i+1, Ibestpar_array[i+1]))
+        print("=================================")
 
-        print "Chi2: ",result.fnorm," Reduced Chi2: ",result.fnorm/len(data)
+        print("Chi2: ",result.fnorm," Reduced Chi2: ",result.fnorm/len(data))
 
     return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)
    
@@ -324,7 +324,7 @@ def _extract_GH_params(Params, parnames) :
     """ Extract the parameters from the formatted list """
     degGH = len(parnames)
     p = np.zeros(degGH, dtype=np.float64)
-    for i in xrange(degGH) :
+    for i in range(degGH) :
         p[i] = Params[parnames[i]].value
     return p
 
@@ -362,13 +362,13 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
 
     ## Method check
     if lmfit_method not in lmfit_methods :
-        print "ERROR: method must be one of the three following methods : ", lmfit_methods
+        print("ERROR: method must be one of the three following methods : ", lmfit_methods)
 
     ## Setting up epsfcn if not forced by the user
-    if "epsfcn" not in fcnargs.keys() : fcnargs["epsfcn"] = 0.01
-    if "xtol" not in fcnargs.keys() : fcnargs["xtol"] = 1.e-10
-    if "gtol" not in fcnargs.keys() : fcnargs["gtol"] = 1.e-10
-    if "ftol" not in fcnargs.keys() : fcnargs["ftol"] = 1.e-10
+    if "epsfcn" not in list(fcnargs.keys()) : fcnargs["epsfcn"] = 0.01
+    if "xtol" not in list(fcnargs.keys()) : fcnargs["xtol"] = 1.e-10
+    if "gtol" not in list(fcnargs.keys()) : fcnargs["gtol"] = 1.e-10
+    if "ftol" not in list(fcnargs.keys()) : fcnargs["ftol"] = 1.e-10
 
     ## If no coordinates is given, create them and use pixel as a unit
     ## The x axis will be from 0 to N-1, N being the number of data points
@@ -387,14 +387,14 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     if isinstance(params,np.ndarray): params=params.tolist()
     if params is not None : 
         if (len(params) > degGH): 
-            print "ERROR: input parameter array (params) is larger than expected"
-            print "ERROR: It is %d while it should be smaller or equal to %s (degGH)", len(params), degGH
+            print("ERROR: input parameter array (params) is larger than expected")
+            print("ERROR: It is %d while it should be smaller or equal to %s (degGH)", len(params), degGH)
             return 0., 0., 0., 0.
         elif (len(params) < degGH): 
             if verbose :
-                print "WARNING: Your input parameters do not fit the Degre set up for the GH moments"
-                print "WARNING: the given value of degGH (%d) will be kept ", degGH
-                print "WARNING: A guess will be used for the input fitting parameters "
+                print("WARNING: Your input parameters do not fit the Degre set up for the GH moments")
+                print("WARNING: the given value of degGH (%d) will be kept ", degGH)
+                print("WARNING: A guess will be used for the input fitting parameters ")
 
     default_params= np.zeros(degGH, dtype=np.float64) + 0.02
     default_params[:2] = momProf[1:]
@@ -445,25 +445,25 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
         """
         if (myinput.iprint > 0) & (myinput.verbose) :
             if myinput.aprint == myinput.iprint :
-                print "Chi2 = %g"%((res*res).sum())
+                print("Chi2 = %g"%((res*res).sum()))
                 myinput.aprint = 0
             myinput.aprint += 1
     ## -----------------------------------------------------------------------------------------
 
     ## Information about the parameters
     parnames = {0:"V", 1:"S"}
-    for i in xrange(2, degGH) : parnames[i] = "H_%02d"%(i+1)
+    for i in range(2, degGH) : parnames[i] = "H_%02d"%(i+1)
 
     Lparams = Parameters()
     if veryverbose :
-        print "-------------------"
-        print "GUESS:     "
-        print "-------------------"
-    for i in xrange(degGH) :
+        print("-------------------")
+        print("GUESS:     ")
+        print("-------------------")
+    for i in range(degGH) :
         Lparams.add(parnames[i], value=params[i], min=minpars[i], max=maxpars[i], vary= not fixed[i])
         if veryverbose :
-            print "%s %02d: %8.3f"%(parnames[i], i+1, params[i])
-    if veryverbose : print "--------------------------------------"
+            print("%s %02d: %8.3f"%(parnames[i], i+1, params[i]))
+    if veryverbose : print("--------------------------------------")
 
     ## Setting up the printing option
     myinput = input_residuals(iprint, verbose)
@@ -472,7 +472,7 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     ## Doing the minimisation with lmfit
     ####################################
     if verbose: 
-        print "------ Starting the minimisation -------"
+        print("------ Starting the minimisation -------")
     result = minimize(opt_lmfit, Lparams, method=lmfit_method, args=(myinput, xax, err, data), **fcnargs)
 
     ## Recompute the best amplitudes to output the right parameters
@@ -484,17 +484,17 @@ def fitGH_lmfit(xax, data, degGH=2, err=None, params=None, fixed=None, limitedmi
     Ibestpar_array = np.concatenate(([Iamp], p))
 
     if verbose :
-        print "====="
-        print "FIT: "
-        print "================================="
-        print "        I       V         Sig   "
-        print "  %8.3f  %8.3f   %8.3f "%(Ibestpar_array[0], Ibestpar_array[1], Ibestpar_array[2])
-        print "================================="
-        for i in xrange(2, degGH) :
-            print "GH %02d: %8.4f "%(i+1, Ibestpar_array[i+1])
-        print "================================="
+        print("=====")
+        print("FIT: ")
+        print("=================================")
+        print("        I       V         Sig   ")
+        print("  %8.3f  %8.3f   %8.3f "%(Ibestpar_array[0], Ibestpar_array[1], Ibestpar_array[2]))
+        print("=================================")
+        for i in range(2, degGH) :
+            print("GH %02d: %8.4f "%(i+1, Ibestpar_array[i+1]))
+        print("=================================")
 
-        print "Chi2: ",result.chisqr," Reduced Chi2: ",result.redchi
+        print("Chi2: ",result.chisqr," Reduced Chi2: ",result.redchi)
 
     return Ibestpar_array, result, GaussHermite(xax, Ibestpar_array)
    

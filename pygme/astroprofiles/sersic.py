@@ -55,7 +55,7 @@ def hfunc_Abel(n) :
     nu = interpolate.interp1d(ndata, nudata)
 
     if (n > 10) | (n < 0.5) :
-        print "Error: n is too high or too low here \n"
+        print("Error: n is too high or too low here \n")
         return 0.,0.,0.,0.,0., 0.
 
     return nu(n), k(n), a0(n), a1(n), a2(n), a3(n)
@@ -80,7 +80,7 @@ def hfunc_Trujillo(n) :
     nu = interpolate.interp1d(ndata, nudata)
 
     if (n > 10) | (n < 0.5) :
-        print "Error: n is too high or too low here \n"
+        print("Error: n is too high or too low here \n")
         return 0.,0.,0.,0.,0.
 
     return nu(n), p(n), h1(n), h2(n), h3(n)
@@ -106,7 +106,7 @@ def facCh(n, nu, p, a0, a1, a2, a3, x, bn) :
 # Sersic fitting and tool function
 #######################################################################
 class SersicProfile :
-    def __init__(self, n=1., Ie=1., I0=None, Re=1., rsamp=None, **kwargs) :
+    def __init__(self, n=1., Re=1.0, Ie=None, I0=None, Ltot=None, rsamp=None, **kwargs) :
         """ Parameters of the Sersic law: n, Ie, Re
               n is adimensional and can be anything from 0 to infinity
                 It usually has values between 1 and 8 for real galaxies
@@ -126,15 +126,12 @@ class SersicProfile :
         self.n = nfloat(n)
         self.Re = Re
         self.bn = self.get_bn()
-        if I0 is None :
-            self.Ie = Ie
-            self.get_I0()
-        else :
-            self.I0 = I0
-            self.get_Ie()
-
-        ## Compute the total 1D luminosity
-        self.get_Ltot()
+        # Now setting up in order of less importance in case these
+        # are multiply defined
+        self._Ltot = self._I0 = self._Ie = 1.0
+        self.Ltot = Ltot
+        self.Ie = Ie
+        self.I0 = I0
 
         ## Compute some input numbers for the Prugniel-Simien function
         if 'pPS97' in kwargs :
@@ -150,6 +147,7 @@ class SersicProfile :
         self.rhop = self.get_Sersic(self.r)
         ## we then derive the spatial luminosity profile from Simonneau et al
         self.rhoL = self.get_rhoSersic(self.r)
+
         ## we then derive the spatial luminosity profile from Abel deprojection
         self.rhoAbel = self.get_rhoAbel(self.r)
         self.rhoPS97 = self.get_rhoPS97(self.r)
@@ -187,25 +185,115 @@ class SersicProfile :
    #######################################################################
    # Function to derive either I0 or Ie depending on which one is provided
    #######################################################################
-    def get_I0(self, Ie=None) :
+
+    @property
+    def Ie(self):
+        return self._Ie
+
+    @Ie.setter
+    def Ie(self, val):
+        if val is None:
+            if self.I0 is None:
+                if self.Ltot is None:
+                    print("Warning: setting Ie to default of 1.0")
+                    self._Ie = 1.0
+                else:
+                    self._set_Ie_from_Ltot()
+            else:
+                self._set_Ie()
+        else:
+            self._Ie = val
+            self._warn_change_I0IeLtot()
+
+        self._set_I0()
+        self._set_Ltot()
+
+    @property
+    def I0(self):
+        return self._I0
+
+    @I0.setter
+    def I0(self, val):
+       if val is None:
+           if self.Ltot is None:
+               if self.Ie is None:
+                   print("Warning: setting I0 to default of 1.0")
+                   self._I0 = 1.0
+               else:
+                   self._set_I0()
+           else:
+               self._set_I0_from_Ltot()
+       else:
+           self._I0 = val
+           self._warn_change_I0IeLtot()
+       self._set_Ie()
+       self._set_Ltot()
+
+    @property
+    def Ltot(self):
+        return self._Ltot
+
+    @Ltot.setter
+    def Ltot(self, val):
+        if val is None:
+            if self.I0 is None:
+                if self.Ie is None:
+                    print("Warning: setting Ltot to default of 1.0")
+                    self._Ltot = 1.0
+                else:
+                    self._set_Ltot_from_Ie()
+            else:
+                self._set_Ltot_from_I0()
+        else:
+            self._Ltot = val
+            self._warn_change_I0IeLtot()
+
+        self._set_I0_from_Ltot()
+        self._set_Ie()
+
+    def _warn_change_I0IeLtot(self):
+        lpar = ['I0', 'Ie', 'Ltot']
+        for l in lpar:
+            if getattr(self, l) is None:
+                clpar = copy.copy(lpar)
+                clpar.remove(l)
+                print(f"Value of {l} will be derived from other parameters")
+
+    def _set_Ie_from_Ltot(self):
+        self._Ie = self.Ltot / self._get_Ltot_I01() / exp(self.bn)
+
+    def _set_I0_from_Ltot(self):
+        self._I0 = self.Ltot / self._get_Ltot_I01()
+
+    def _set_I0(self):
         """
         Provides I0 = central surface brightness value
         """
-        if Ie is not None : self.Ie = Ie
-        self.I0 = self.Ie * np.exp(self.bn)
+        self._I0 = self.Ie * np.exp(self.bn)
 
-    def get_Ie(self, I0=None) :
+    def _set_Ie(self):
         """
         Provides Ie = surface brightness at 1 Re
         """
-        if I0 is not None : self.I0 = I0
-        self.Ie = self.I0 / exp(self.bn)
+        self._Ie = self.I0 / exp(self.bn)
 
-    def get_Ltot(self) :
+    def _get_Ltot_I01(self) :
         """
         Provides the total luminosity
         """
-        self.Ltot = self.I0 * self.Re**2 * pi * 2. * self.n * gamma(2. * self.n) / self.bn**(2.*self.n)
+        return self.Re**2 * pi * 2. * self.n * gamma(2. * self.n) / self.bn**(2.*self.n)
+
+    def _set_Ltot(self) :
+        """
+        Provides the total luminosity
+        """
+        self._Ltot = self.I0 * self._get_Ltot_I01()
+
+    def _set_Ltot_from_Ie(self) :
+        """
+        Provides the total luminosity
+        """
+        self._Ltot = self.Ie * np.exp(self.bn) * self._get_Ltot_I01()
 
     #=========================================================================
     ## Deriving Lambdas and Weights ######################################
@@ -274,7 +362,7 @@ class SersicProfile :
         r, rre, Nr = self.get_radii(r.ravel())
 
         ## Resample r for finer interpolation of rho
-        self.rfine = scipy.ndimage.interpolation.zoom(r, 3.0, output=None, order=1)
+        self.rfine = scipy.ndimage.interpolation.zoom(r, 3.0, output=None, order=1, mode='nearest')
         self.rhoLfine = self.get_rhoSersic(self.rfine)
         self.frhoL = interpolate.interp1d(self.rfine, self.rhoLfine)
 

@@ -29,8 +29,8 @@ except ImportError:
 from numpy import asarray
 from numpy import cos, sin, copy, sqrt, exp
 
-from rwcfor import floatMGE
-from mge_miscfunctions import print_msg
+from .rwcfor import floatMGE
+from .mge_miscfunctions import print_msg
 
 __version__ = '1.1.6 (22 Dec 2014)'
 
@@ -71,7 +71,7 @@ class dynParamMGE():
                     self.e2q2dSig3Darc2[i] = MGEmodel.e2[i] / (2. * self.q2Sig3Darc2[i])
                     self.e2q2Sig3Darc2[i] = MGEmodel.e2[i] / self.q2Sig3Darc2[i]
                 else :
-                    print "WARNING: %d component has q2*Sig2=0" %(i+1)
+                    print("WARNING: %d component has q2*Sig2=0" %(i+1))
                 for j in range(MGEmodel.nGauss) :
                     self.Bij[i,j] = MGEmodel.e2[j] - self.q2Sig3Darc2[i] / MGEmodel.Sig3Darc2[j]
                     self.Bij_soft[i,j] = MGEmodel.e2[j] - self.q2Sig3Darc2[i] / self.Sig3Darc2_soft[j]
@@ -155,7 +155,7 @@ class paramMGE(object) :
 
         ## Test now if this exists
         if not os.path.isdir(saveMGE) :
-            print "ERROR: directory for Archival does not exist = %s"%(saveMGE)
+            print("ERROR: directory for Archival does not exist = %s"%(saveMGE))
             return
         ## Finally save the value of saveMGE in the structure
         self.saveMGE = saveMGE
@@ -295,15 +295,18 @@ class paramMGE(object) :
             self.axi = 1
 
     ## Change the Distance of the model ###########################
-    def _reset_Dist(self, Dist=10.0, verbose=0) :
+    def _reset_Dist(self, Dist=None, verbose=True) :
         if Dist is None :
-            if verbose : print "WARNING: no Dist reset since Dist was None"
-            return
+            if hasattr(self, "Dist"):
+                Dist = self.Dist
+            else:
+                Dist = 10.0 ## Setting the default in case the Distance is negative
+                print("WARNING: dummy Dist value for reset")
 
         if Dist <= 0. :
             if verbose:
-                print "WARNING: you provided a negative Dist value"
-                print "WARNING: it will be set to the default (10 Mpc)"
+                print("WARNING: you provided a negative Dist value")
+                print("WARNING: it will be set to the default (10 Mpc)")
             Dist = 10.0 ## Setting the default in case the Distance is negative
 
         self.Dist = floatMGE(Dist)
@@ -407,7 +410,7 @@ class paramMGE(object) :
             self.GaussDynCompNumber[findGauss3D] = int(linesplit[9])
         if (self.QxZ[findGauss3D] != self.QyZ[findGauss3D]) :
             self.axi = 0
-            print 'Detected triaxial component %d: self.axi set to 0'%(findGauss3D)
+            print('Detected triaxial component %d: self.axi set to 0'%(findGauss3D))
         return
      ## ============================================================
     def _init_BetaEps(self, verbose=True) :
@@ -419,22 +422,22 @@ class paramMGE(object) :
         if np.size(self.FacBetaEps) == 1 :
             self.FacBetaEps = np.array([self.FacBetaEps] * self.nGauss)
         elif np.size(self.FacBetaEps) != self.nGauss :
-            print "WARNING: FacBetaEps has a dimension which is not consistent with the number of Gaussians"
-            print "WARNING: Should be a scalar or a 1D array of size nGauss"
-            print "WARNING: We will therefore use the fixed default value = 0.6 instead."
+            print("WARNING: FacBetaEps has a dimension which is not consistent with the number of Gaussians")
+            print("WARNING: Should be a scalar or a 1D array of size nGauss")
+            print("WARNING: We will therefore use the fixed default value = 0.6 instead.")
             self.FacBetaEps = np.array([0.6] * self.nGauss)
  
         self.FacBetaEps = np.asarray(self.FacBetaEps)
         ## Checking that no value goes beyond MaxFacBetaEps
         if np.any(self.FacBetaEps > self.MaxFacBetaEps) : 
-            print "WARNING: FacBetaEps cannot be set to values higher than %5.3f"%(self.MaxFacBetaEps)
-            print "WARNING: Input FacBetaEps = ", self.FacBetaEps
-            print "WARNING: We will change these values to 0.6."
+            print("WARNING: FacBetaEps cannot be set to values higher than %5.3f"%(self.MaxFacBetaEps))
+            print("WARNING: Input FacBetaEps = ", self.FacBetaEps)
+            print("WARNING: We will change these values to 0.6.")
             self.FacBetaEps = np.where(self.FacBetaEps > self.MaxFacBetaEps, self.MaxFacBetaEps, self.FacBetaEps)
  
         if verbose: 
-            print "The BetaEps vector (beta = FacBetaEps * Epsilon) is fixed to  "
-            print "                   ", self.FacBetaEps
+            print("The BetaEps vector (beta = FacBetaEps * Epsilon) is fixed to  ")
+            print("                   ", self.FacBetaEps)
  
         if self.betaeps.any() :
             self.kRZ[self.betaeps == 1] = np.zeros(np.sum(self.betaeps, dtype=np.int), floatMGE) + 1. / sqrt(1. - (self.FacBetaEps[self.betaeps == 1] * (1. - self.QxZ[self.betaeps == 1])))
@@ -449,7 +452,7 @@ class paramMGE(object) :
                 infilename = indir + infilename
 
             if not os.path.isfile(infilename) :          # testing the existence of the file
-                print 'OPENING ERROR: File %s not found' %infilename
+                print('OPENING ERROR: File %s not found' %infilename)
                 return
 
             ################################
@@ -472,7 +475,7 @@ class paramMGE(object) :
             keynGauss = keynStarGauss = keynGasGauss = keynHaloGauss = keynGroup = 0
             findGauss2D = findGauss3D = findStarGauss2D = findStarGauss3D = findGasGauss2D = findGasGauss3D = findHaloGauss2D = findHaloGauss3D = findGroup = 0
 
-            for i in xrange(nlines) :
+            for i in range(nlines) :
                 if lines[i][0] == "#" or lines[i] == "\n" :
                     continue
                 sl = lines[i].split()
@@ -492,11 +495,11 @@ class paramMGE(object) :
                     keynGasGauss = 1
                     keynHaloGauss = 1
                     if nStarGauss < 0 or nGasGauss < 0 or nHaloGauss < 0:
-                        print 'ERROR: Keyword NGAUSS has some negative values: %d %d %d' %(nStarGauss, nGasGauss, nHaloGauss)
+                        print('ERROR: Keyword NGAUSS has some negative values: %d %d %d' %(nStarGauss, nGasGauss, nHaloGauss))
                         continue
                     nGauss = nStarGauss + nGasGauss + nHaloGauss
                     if nGauss <= 0 :
-                        print 'ERROR: Keyword NGAUSS is less than or equal to 0: %d' %nGauss
+                        print('ERROR: Keyword NGAUSS is less than or equal to 0: %d' %nGauss)
                         continue
                     self._reset(nGauss=(nStarGauss, nGasGauss, nHaloGauss))
                     keynGauss = 1
@@ -506,19 +509,19 @@ class paramMGE(object) :
                 elif (keyword[:6] == "NGROUP") :
                     nGroup = int(sl[1])
                     if nGroup < 0 :
-                        print 'ERROR: Keyword NGROUP is less than 0: %d' %nGroup
+                        print('ERROR: Keyword NGROUP is less than 0: %d' %nGroup)
                         continue
                     self._reset(nGroup=nGroup)
                     keynGroup = 1
                 elif (keyword[:9] == "NDYNCOMP") :
                     nDynComp = int(sl[1])
                     if nDynComp < 0 :
-                        print 'ERROR: Keyword NDYNCOMP is less than 0: %d' %nDynComp
+                        print('ERROR: Keyword NDYNCOMP is less than 0: %d' %nDynComp)
                         continue
                     self._reset(nDynComp=nDynComp)
 
             if (keynGauss == 0) :
-                print 'Could not find NGAUSS keyword in the MGE input File %s' %self.MGEname
+                print('Could not find NGAUSS keyword in the MGE input File %s' %self.MGEname)
                 return
             listStarGauss2D = []
             listStarGauss3D = []
@@ -533,7 +536,7 @@ class paramMGE(object) :
             ##================================================================================##
             ## Then really decoding the lines and getting all the details from the ascii file ##
             ##================================================================================##
-            for i in xrange(nlines) :
+            for i in range(nlines) :
                 if (lines[i][0] == "#")  or (lines[i] == "\n") :
                     continue
                 sl = lines[i].split()
@@ -543,10 +546,10 @@ class paramMGE(object) :
                 ## projected gaussians
                 elif (keyword[:11] == "STARGAUSS2D") :
                     if findGauss2D == self.nGauss  or keynStarGauss == 0 :
-                        print 'Line ignored (STARS: NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (STARS: NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findStarGauss2D == self.nStarGauss :
-                        print 'Line ignored (STAR: NSTARGAUSS = %d): %s' %(self.nStarGauss,lines[i])
+                        print('Line ignored (STAR: NSTARGAUSS = %d): %s' %(self.nStarGauss,lines[i]))
                         continue
                     self._read_GAUSS2D(sl, findGauss2D)
                     listStarGauss2D.append(findGauss2D)
@@ -554,10 +557,10 @@ class paramMGE(object) :
                     findStarGauss2D += 1
                 elif (keyword[:10] == "GASGAUSS2D") :
                     if findGauss2D == self.nGauss or keynGasGauss == 0:
-                        print 'Line ignored (GAS: NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (GAS: NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findGasGauss2D == self.nGasGauss :
-                        print 'Line ignored (GAS: NGASGAUSS = %d): %s' %(self.nGasGauss,lines[i])
+                        print('Line ignored (GAS: NGASGAUSS = %d): %s' %(self.nGasGauss,lines[i]))
                         continue
                     self._read_GAUSS2D(sl, findGauss2D)
                     listGasGauss2D.append(findGauss2D)
@@ -565,10 +568,10 @@ class paramMGE(object) :
                     findGasGauss2D += 1
                 elif (keyword[:11] == "HALOGAUSS2D") :
                     if findGauss2D == self.nGauss or keynHaloGauss == 0:
-                        print 'Line ignored (HALO: NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (HALO: NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findHaloGauss2D == self.nHaloGauss :
-                        print 'Line ignored (HALO: NHALOGAUSS = %d): %s' %(self.nHaloGauss,lines[i])
+                        print('Line ignored (HALO: NHALOGAUSS = %d): %s' %(self.nHaloGauss,lines[i]))
                         continue
                     self._read_GAUSS2D(sl, findGauss2D)
                     listHaloGauss2D.append(findGauss2D)
@@ -578,10 +581,10 @@ class paramMGE(object) :
                 ## spatial gaussians
                 elif (keyword[:11] == "STARGAUSS3D") :
                     if findGauss3D == self.nGauss :
-                        print 'Line ignored (NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findStarGauss3D == self.nStarGauss :
-                        print 'Line ignored (STAR: NSTARGAUSS = %d): %s' %(self.nStarGauss,lines[i])
+                        print('Line ignored (STAR: NSTARGAUSS = %d): %s' %(self.nStarGauss,lines[i]))
                         continue
                     self._read_GAUSS3D(sl, findGauss3D)
                     listStarGauss3D.append(findGauss3D)
@@ -589,10 +592,10 @@ class paramMGE(object) :
                     findStarGauss3D += 1
                 elif (keyword[:10] == "GASGAUSS3D") :
                     if findGauss3D == self.nGauss or keynGasGauss == 0:
-                        print 'Line ignored (GAS: NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (GAS: NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findGasGauss3D == self.nGasGauss :
-                        print 'Line ignored (GAS: NGASGAUSS = %d): %s' %(self.nGasGauss,lines[i])
+                        print('Line ignored (GAS: NGASGAUSS = %d): %s' %(self.nGasGauss,lines[i]))
                         continue
                     self._read_GAUSS3D(sl, findGauss3D)
                     listGasGauss3D.append(findGauss3D)
@@ -600,10 +603,10 @@ class paramMGE(object) :
                     findGasGauss3D += 1
                 elif (keyword[:11] == "HALOGAUSS3D") :
                     if findGauss3D == self.nGauss or keynHaloGauss == 0:
-                        print 'Line ignored (HALO: NGAUSS = %d): %s' %(self.nGauss,lines[i])
+                        print('Line ignored (HALO: NGAUSS = %d): %s' %(self.nGauss,lines[i]))
                         continue
                     if findHaloGauss3D == self.nHaloGauss :
-                        print 'Line ignored (HALO: NHALOGAUSS = %d): %s' %(self.nHaloGauss,lines[i])
+                        print('Line ignored (HALO: NHALOGAUSS = %d): %s' %(self.nHaloGauss,lines[i]))
                         continue
                     self._read_GAUSS3D(sl, findGauss3D)
                     listHaloGauss3D.append(findGauss3D)
@@ -625,11 +628,11 @@ class paramMGE(object) :
                 elif (keyword[:10] == "NPARTGROUP") :
                     GroupNumber = int(keyword[10:])
                     if GroupNumber > self.nGroup or GroupNumber < 0 or findGroup == self.nGroup or keynGroup == 0 or (len(sl) > 3) or (int(sl[1]) < 0) :
-                        print 'Line ignored (NPARTGROUP%2d: NGROUP = %d) = Wrong Entry %s' %(GroupNumber, self.nGroup, lines[i])
+                        print('Line ignored (NPARTGROUP%2d: NGROUP = %d) = Wrong Entry %s' %(GroupNumber, self.nGroup, lines[i]))
                         continue
                     if len(sl) == 3 :
                         if (int(sl[2]) < 0) or (int(sl[2]) > int(sl[1])) :
-                            print 'Line ignored (NPARTGROUP: NGROUP = %d) = second entry should be greater than 0 and less than the first entry: %s' %(self.nGroup,lines[i])
+                            print('Line ignored (NPARTGROUP: NGROUP = %d) = second entry should be greater than 0 and less than the first entry: %s' %(self.nGroup,lines[i]))
                             continue
                         self.nRealisedPartGroup[GroupNumber - 1] = int(sl[2])             # Number of particles in Group to be realised
 
@@ -637,7 +640,7 @@ class paramMGE(object) :
 
                     findGroup += 1
                 else :
-                    print 'Could not decode the following keyword: %s' %keyword
+                    print('Could not decode the following keyword: %s' %keyword)
                     mge_file.close
                     break
             ################################
@@ -678,7 +681,7 @@ class paramMGE(object) :
             k = 0
             j = findGauss2D - self.nHaloGauss - self.nGasGauss
             l = findGauss2D - self.nHaloGauss
-            for i in xrange(findGauss2D) :
+            for i in range(findGauss2D) :
                 if i not in listGasGauss2D :
                     if i not in listHaloGauss2D :
                         ind = k
@@ -700,7 +703,7 @@ class paramMGE(object) :
             self.listGasGauss = listGasGauss3D
             self.listHaloGauss = listHaloGauss3D
             self.listStarGauss = listStarGauss3D
-            for i in xrange(findGauss3D) :
+            for i in range(findGauss3D) :
                 if i not in listGasGauss3D :
                     if i not in listHaloGauss3D :
                         ind = k
@@ -726,10 +729,10 @@ class paramMGE(object) :
 
             # Testing if all axis ratios are axisymmetric or not
             self.axi = 1
-            for i in xrange(findGauss3D) :
+            for i in range(findGauss3D) :
                 if (self.QxZ[i] != self.QyZ[i]) :
                     self.axi = 0
-                    print 'Detected triaxial component: self.axi set to 0'
+                    print('Detected triaxial component: self.axi set to 0')
             ## Add all sorts of parameters which are useful for further derivation
             self._comp_Nparticles()
 
@@ -750,21 +753,21 @@ class paramMGE(object) :
                     print_msg("We thus used the 2D Gaussians as a prior for the deprojection at %5.2f degrees"%(self.Euler[1]), 1)
                     self.deproject(inclin=self.Euler[1], verbose=True)
 
-            print "Found %d Spatial and %d projected Gaussians" %(self._findGauss3D, self._findGauss2D)
-            print "With an Inclination of %5.2f (degrees)"%(self.Euler[1])
+            print("Found %d Spatial and %d projected Gaussians" %(self._findGauss3D, self._findGauss2D))
+            print("With an Inclination of %5.2f (degrees)"%(self.Euler[1]))
             if self.nStarGauss != 0 :
-                print "This includes %d STAR Gaussians" %(np.maximum(findStarGauss3D, findStarGauss2D))
+                print("This includes %d STAR Gaussians" %(np.maximum(findStarGauss3D, findStarGauss2D)))
             if self.nGasGauss != 0 :
-                print "This includes %d GAS Gaussians" %(np.maximum(findGasGauss3D, findGasGauss2D))
+                print("This includes %d GAS Gaussians" %(np.maximum(findGasGauss3D, findGasGauss2D)))
             if self.nHaloGauss != 0 :
-                print "This also includes %d HALO Gaussians" %(np.maximum(findHaloGauss3D,findHaloGauss2D))
-            print "Found %d Particle Groups" %(findGroup)
-            print "Found %d Dynamical Components (each may include a set of Gaussians)" %(nDynComp)
-            print "Distance set up to %6.2f Mpc"%(self.Dist)
+                print("This also includes %d HALO Gaussians" %(np.maximum(findHaloGauss3D,findHaloGauss2D)))
+            print("Found %d Particle Groups" %(findGroup))
+            print("Found %d Dynamical Components (each may include a set of Gaussians)" %(nDynComp))
+            print("Distance set up to %6.2f Mpc"%(self.Dist))
 
         # no name was specified #
         else :
-            print 'You should specify an output file name'
+            print('You should specify an output file name')
 
     #====================== END OF READING / INIT THE MGE INPUT FILE =======================#
     ### INTEGRATED LUMINOSITY - ALL -------------------------------------------------
@@ -921,7 +924,7 @@ class paramMGE(object) :
     ### Set the list of Indices for Gaussians        ##
     ###################################################
     def _set_ilist(self, ilist=None) :
-        if ilist is None : return range(self.nGauss)
+        if ilist is None : return list(range(self.nGauss))
         else : return ilist
 
     ###################################################
@@ -1027,24 +1030,24 @@ class paramMGE(object) :
                      default is "E"
         """
         if self.axi != 1 :
-            print  "ERROR: cannot deproject this model: not axisymmetric !\n"
+            print("ERROR: cannot deproject this model: not axisymmetric !\n")
             return
 
         if inclin is None : inclin = self.Euler[1]
 
         self.Euler = np.array([0., inclin, 0.])
         if inclin == 0. :
-            print "Not yet supported\n"
+            print("Not yet supported\n")
             return
             for i in range(self.nGauss) :
                 if self.Q2D[i] != 1 :
-                    print "ERROR: cannot deproject this model as component %d does not have Q2D = 1!\n" %(i+1)
+                    print("ERROR: cannot deproject this model as component %d does not have Q2D = 1!\n" %(i+1))
         elif inclin == 90. :
             if verbose :
-                print "Edge-on deprojection\n"
+                print("Edge-on deprojection\n")
             self.Sig3Darc = self.Sig2Darc
-            self.QxZ = self.Q2D
-            self.QyZ = self.Q2D
+            self.QxZ = self.Q2D * 1.0
+            self.QyZ = self.Q2D * 1.0
             self.Imax3D = self.Imax2D / (sqrt(2. * np.pi) * self.Sig2Darc)
             self._findGauss3D = self.QxZ.shape[0]
         else :
@@ -1054,25 +1057,25 @@ class paramMGE(object) :
             for i in range(self.nGauss) :
                 if cosi2 > (self.Q2D[i] * self.Q2D[i]) :
                     maxangle = np.arccos(self.Q2D[i])
-                    print "ERROR: cannot deproject the component %d. Max angle is %f" %(i+1, maxangle*180./np.pi)
+                    print("ERROR: cannot deproject the component %d. Max angle is %f" %(i+1, maxangle*180./np.pi))
                     continue
                 self.QxZ[i] = sqrt((self.Q2D[i] * self.Q2D[i] - cosi2) / sini2)
-                self.QyZ[i] = self.QxZ[i]
-                self.Sig3Darc[i] = self.Sig2Darc[i]
+                self.QyZ[i] = self.QxZ[i] * 1.0
+                self.Sig3Darc[i] = self.Sig2Darc[i] * 1.0
                 self.Imax3D[i] = self.Imax2D[i] *  self.Q2D[i] / (sqrt(2. * np.pi) * self.QxZ[i] * self.Sig2Darc[i])
             self._findGauss3D = self.QxZ.shape[0]
 
         if verbose :
-            print "Deprojected Model with inclination of %5.2f" %(inclin)
-            print "      #       Imax              Sigma       Qx        Qy"        
-            print "           Lsun/pc^2/arcsec     arcsec"
+            print("Deprojected Model with inclination of %5.2f" %(inclin))
+            print("      #       Imax              Sigma       Qx        Qy")        
+            print("           Lsun/pc^2/arcsec     arcsec")
             if printformat == "F" : ff = "%13.5f"
             else : ff = "%13.8e"
             for i in range(self.nGauss) :
-                print ("3D-G %2d    {0}        %10.5f %9.5f %9.5f" %(i+1, self.Sig3Darc[i], self.QxZ[i], self.QyZ[i])).format(ff%(self.Imax3D[i]))
+                print(("3D-G %2d    {0}        %10.5f %9.5f %9.5f" %(i+1, self.Sig3Darc[i], self.QxZ[i], self.QyZ[i])).format(ff%(self.Imax3D[i])))
 
         if particles :
-            if not self.__dict__.has_key('kRZ') :
+            if 'kRZ' not in self.__dict__ :
                 self.kRZ = np.ones(self.nGauss, floatMGE)
             self._init_BetaEps(verbose=False)
             self._comp_Nparticles()
@@ -1091,21 +1094,21 @@ class paramMGE(object) :
                       default is "E"
         """
         if self.axi != 1 :
-            print  "ERROR: cannot project this model: not axisymmetric !\n"
+            print("ERROR: cannot project this model: not axisymmetric !\n")
             return
 
         self.Euler = np.array([0., inclin, 0.])
         if inclin == 0. :
             if verbose :
-                print "Face-on Projection\n"
+                print("Face-on Projection\n")
             self.Sig2Darc = self.Sig3Darc
             self.Q2D = np.ones(self.nGauss, floatMGE)
             self.Imax2D = self.Imax3D * sqrt(2. * np.pi) * self.QxZ * self.Sig3Darc
         elif inclin == 90. :
             if verbose :
-                print "Edge-on Projection\n"
-            self.Sig2Darc = self.Sig3Darc
-            self.Q2D = self.QxZ
+                print("Edge-on Projection\n")
+            self.Sig2Darc = self.Sig3Darc * 1.0
+            self.Q2D = self.QxZ * 1.0
             self.Imax2D = self.Imax3D * (sqrt(2. * np.pi) * self.Sig3Darc)
         else :
             inclin_rad = inclin * np.pi / 180.
@@ -1113,18 +1116,18 @@ class paramMGE(object) :
             sini2 = sin(inclin_rad) * sin(inclin_rad)
             for i in range(self.nGauss) :
                 self.Q2D[i] = sqrt(self.QxZ[i] * self.QxZ[i] * sini2 + cosi2)
-                self.Sig2Darc[i] = self.Sig3Darc[i]
+                self.Sig2Darc[i] = self.Sig3Darc[i] * 1.0
                 self.Imax2D[i] = self.Imax3D[i] * sqrt(2. * np.pi) * self.QxZ[i] * self.Sig3Darc[i] / self.Q2D[i]
 
         self._findGauss2D = self.Q2D.shape[0]
         if verbose :
-            print "Projected Model with inclination of %5.2f" %(inclin)
-            print "      #       Imax       Sigma        Q2D"        
-            print "            Lsun/pc^2   arcsec"
+            print("Projected Model with inclination of %5.2f" %(inclin))
+            print("      #       Imax       Sigma        Q2D")        
+            print("            Lsun/pc^2   arcsec")
             if printformat == "F" : ff = "%13.5f"
             else : ff = "%13.8e"
             for i in range(self.nGauss) :
-                print ("2D-G %2d {0} %9.5f %9.5f"%(i+1, self.Sig2Darc[i], self.Q2D[i])).format(ff%(self.Imax2D[i]))
+                print(("2D-G %2d {0} %9.5f %9.5f"%(i+1, self.Sig2Darc[i], self.Q2D[i])).format(ff%(self.Imax2D[i])))
         if particles :
             self._comp_Nparticles()
         return
@@ -1135,7 +1138,7 @@ class paramMGE(object) :
     ##################################################################
     def write_mge(self, outdir=None, outfilename=None, overwrite=False) :
         if (outfilename is None) :                       # testing if the name was set
-            print 'You should specify an output file name'
+            print('You should specify an output file name')
             return
 
         if outdir is not None :
@@ -1144,7 +1147,7 @@ class paramMGE(object) :
         ## Testing if the file exists
         if os.path.isfile(outfilename) :
             if not overwrite : # testing if the existing file should be overwritten
-                print 'WRITING ERROR: File %s already exists, use overwrite=True if you wish' %outfilename
+                print('WRITING ERROR: File %s already exists, use overwrite=True if you wish' %outfilename)
                 return
 
         mgeout = open(outfilename, "w+")
@@ -1267,8 +1270,8 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
     TNGauss = NGauss.sum()
 
     ## Inclination
-    if kwargs.has_key("Inclination") :
-        if kwargs.has_key("Euler") :
+    if "Inclination" in kwargs :
+        if "Euler" in kwargs :
             print_msg("Both Euler and Inclination are defined here: will use Euler as a default", 1)
         else :
             kwargs["Euler"] =  np.array([0., float(kwargs.get("Inclination")), 0.])
@@ -1284,7 +1287,7 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
     temp3D_short = np.array([1., 1., 1., 1, 1])
 
     found2D = found3D = 0
-    if kwargs.has_key('Gauss3D') :
+    if 'Gauss3D' in kwargs :
         Gaussians3D = np.asarray(kwargs.get('Gauss3D'))
         if Gaussians3D.size == 9 : 
             Gaussians3D = np.tile(Gaussians3D, tempMGE.nGauss)
@@ -1298,10 +1301,10 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
             Gaussians3D = np.tile(temp3D, tempMGE.nGauss).reshape(tempMGE.nGauss, 9) 
 
         found3D = 1
-        if kwargs.has_key('Gauss2D') :
+        if 'Gauss2D' in kwargs :
             print_msg("We will only use the 3D Gaussians here and will project them accordingly", 1)
 
-    elif kwargs.has_key('Gauss2D') :
+    elif 'Gauss2D' in kwargs :
         Gaussians2D = np.asarray(kwargs.get('Gauss2D'))
         if Gaussians2D.size == 4 : 
             Gaussians2D = np.tile(Gaussians2D, tempMGE.nGauss).reshape(tempMGE.nGauss, 4) 
@@ -1341,6 +1344,7 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
     tempMGE.Center = np.asarray(kwargs.get('Center', np.zeros(2, float)))
     tempMGE.Dist = float(kwargs.get('Distance', 10.))
     tempMGE.Mbh = float(kwargs.get('MBH', 0.))
+    tempMGE.mcut = float(kwargs.get('mcut', 50000.))
 
     tempMGE.nDynComp = kwargs.get("NDynComp", 1)
     tempMGE.nGroup = kwargs.get("NGroup", 1)
