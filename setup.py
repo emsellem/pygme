@@ -19,7 +19,7 @@ import os
 if os.path.exists('MANIFEST'):
     os.remove('MANIFEST')
 setup(name='pygme',
-      version='0.1.0',
+      version='0.1.1',
       description='PYthon Gaussian ModElling - Python MGE Tool',
       author='Eric Emsellem',
       author_email='eric.emsellem@eso.org',

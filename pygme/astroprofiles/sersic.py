@@ -18,6 +18,8 @@ from scipy.special import gamma, gammainc
 from astropy.constants import G 
 from astropy import units as u
 
+from pygme.utils.iodata import get_package_data
+
 # Eric Emsellem / ESO-CRAL. 
 __version__ = '1.2.0 (August 10, 2020)'
 # Version 1.2.0 : 2020/08/10 - adding MultSersic and cleaning properties
@@ -40,19 +42,6 @@ def bn(n=1.0):
     else: 
         bn_poly = np.poly1d(_coef_bn_n)
         return (bn_poly(n))
-
-def get_package_data(dataname, folder="/soft/python/my_modules/data_sersic/", asfile=False):
-    """
-    Use this function to load data files distributed with the pygme
-    source code.
-
-    :param str dataname:
-        The name of a file in the package data directory.
-    :returns: The content of the requested file as a string.
-
-    """
-    datapath = joinpath(folder, dataname)
-    return get_data(datapath, asfile=asfile)
 
 def get_data(datapath, asfile=False):
     """
