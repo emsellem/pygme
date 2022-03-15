@@ -1203,17 +1203,17 @@ class paramMGE(object) :
         mgeout.write("## No                  Imax   Sigma      Q      PA\n")
         mgeout.write("## Stellar 2D Gaussians\n")
         for i in range(NGauss[0]) :
-            mgeout.write("STARGAUSS2D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
+            mgeout.write("STARGAUSS2D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
             k += 1
         ## then Gas
         mgeout.write("## Gas 2D Gaussians\n")
         for i in range(NGauss[1]) :
-            mgeout.write("GASGAUSS2D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
+            mgeout.write("GASGAUSS2D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
             k += 1
         ## Then Dark Matter
         mgeout.write("## Dark Matter 2D Gaussians\n")
         for i in range(NGauss[2]) :
-            mgeout.write("HALOGAUSS2D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
+            mgeout.write("HALOGAUSS2D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f \n"%tuple(Gaussians2D[k]))
             k += 1
         ###################
         ## 3D Gaussians
@@ -1223,17 +1223,17 @@ class paramMGE(object) :
         mgeout.write("## ID                  Imax    Sigma       QxZ       QyZ      M/L     kRT     kRZ   Group DynComp\n")
         mgeout.write("## Stellar 3D Gaussians\n")
         for i in range(NGauss[0]) :
-            mgeout.write("STARGAUSS3D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
         ## then Gas
         mgeout.write("## Gas 3D Gaussians\n")
         for i in range(NGauss[1]) :
-            mgeout.write("GASGAUSS3D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
         ## Then Dark Matter
         mgeout.write("## Dark Matter 3D Gaussians\n")
         for i in range(NGauss[2]) :
-            mgeout.write("HALOGAUSS3D%02d   "%(k+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
 
         ## Number of Groups et al.
