@@ -21,4 +21,4 @@ __date__ = '$Date: 2012/03/04 15:05 $'
 
 from . import nfw
 from . import sersic
-__all__ = ['nfw', 'sersic']
+__all__ = ['dm_utils', 'sersic']
