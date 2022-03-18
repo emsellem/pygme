@@ -1311,6 +1311,9 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
         elif Gaussians2D.size == 4 * tempMGE.nGauss :
             Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 4) 
             found2D = 1
+        elif Gaussians2D.size == 6 * tempMGE.nGauss:
+            Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 6) 
+            found2D = 1
         else :
             print_msg("The provided 2D Gaussians have the wrong shape", 1)
             print_msg("We will instead set up a DUMMY set of 3D Gaussians ", 1)
@@ -1338,6 +1341,10 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
         tempMGE.Sig2Darc = Gaussians2D[:,1]
         tempMGE.Q2D = Gaussians2D[:,2]
         tempMGE.PAp = Gaussians2D[:,3]
+        if Gaussians2D.shape[1] > 4:
+            tempMGE.GaussGroupNumber = np.asarray(Gaussians2D[:,4], int)
+        if Gaussians2D.shape[1] > 5:
+            tempMGE.GaussDynCompNumber = np.asarray(Gaussians2D[:,5], int)
         tempMGE.axi = 1
 #        tempMGE.deproject(inclin=tempMGE.Euler[1], particles=False)
 
