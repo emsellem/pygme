@@ -206,7 +206,7 @@ class dynMGE(photMGE) :
             Integrand += self._pParam.qParc[i] * exp(- R2 * T2 / self._dParam.dSig3Darc2_soft[i]) / sqrt(denom[i])
         return Integrand * T2
 
-    def Vcirc(self, R, ilist=None) :
+    def Vcirc(self, R, ilist=None, Mbh=True) :
         """
         Derive the circular velocity for the MGE model taking into account
         Only the Gaussians from the indice list (ilist) - counting from 0
@@ -224,7 +224,7 @@ class dynMGE(photMGE) :
         R2 = R*R
         result = R2 * np.sum(Wquad[i] * self._IntVc(Xquad[i], R2, ilist) for i in range(self.Nquad))
 
-        if (self.Mbh > 0.) :
+        if (self.Mbh > 0.) & Mbh:
             mask = (R == 0.)
             result[mask] += self.facMbh / np.maximum(1.e-2, self.SoftarcMbh)
             result[~mask] += self.facMbh / sqrt(R2[~mask] + self.SoftarcMbh2)
