@@ -1223,17 +1223,29 @@ class paramMGE(object) :
         mgeout.write("## ID                  Imax    Sigma       QxZ       QyZ      M/L     kRT     kRZ   Group DynComp\n")
         mgeout.write("## Stellar 3D Gaussians\n")
         for i in range(NGauss[0]) :
-            mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            if self.betaeps[k]:
+                mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                        + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
+            else:
+                mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
         ## then Gas
         mgeout.write("## Gas 3D Gaussians\n")
         for i in range(NGauss[1]) :
-            mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            if self.betaeps[k]:
+                mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                        + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
+            else:
+                mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
         ## Then Dark Matter
         mgeout.write("## Dark Matter 3D Gaussians\n")
         for i in range(NGauss[2]) :
-            mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
+            if self.betaeps[k]:
+                mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                        + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
+            else:
+                mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
             k += 1
 
         ## Number of Groups et al.
@@ -1285,6 +1297,19 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
     temp2D = np.array([0., 1., 1., 0.])
     temp3D = np.array([0., 1., 1., 1., 1., 1., 1., 1, 1])
     temp3D_short = np.array([1., 1., 1., 1, 1])
+
+    # Testing for betaeps
+    if 'betaeps' in kwargs:
+        betaeps = kwargs.pop('betaeps', np.ones(tempMGE.nGauss, dtype=int))
+        if size(betaeps) == 1:
+            betaeps = [betaeps] * tempMGE.nGauss
+        elif size(betaeps) != tempMGE.nGauss:
+            print_msg("Provided value(s) for betaeps has the wrong shape")
+            print_msg("Setting betaeps to 0 (False) for all Gaussians")
+            betaeps = np.zeros(tempMGE.nGauss, dtype=int)
+        tempMGE.betaeps = np.asarray(betaeps, dtype=int)
+    else:
+        tempMGE.betaeps = np.zeros(tempMGE.nGauss, dtype=int)
 
     found2D = found3D = 0
     if 'Gauss3D' in kwargs :
@@ -1342,9 +1367,15 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
         tempMGE.Q2D = Gaussians2D[:,2]
         tempMGE.PAp = Gaussians2D[:,3]
         if Gaussians2D.shape[1] > 4:
-            tempMGE.GaussGroupNumber = np.asarray(Gaussians2D[:,4], int)
+            tempMGE.ML = np.asarray(Gaussians2D[:,4], int)
         if Gaussians2D.shape[1] > 5:
-            tempMGE.GaussDynCompNumber = np.asarray(Gaussians2D[:,5], int)
+            tempMGE.kRTheta = np.asarray(Gaussians2D[:,5], int)
+        if Gaussians2D.shape[1] > 6:
+            tempMGE.kRZ = np.asarray(Gaussians2D[:,6], int)
+        if Gaussians2D.shape[1] > 7:
+            tempMGE.GaussGroupNumber = np.asarray(Gaussians2D[:,7], int)
+        if Gaussians2D.shape[1] > 8:
+            tempMGE.GaussDynCompNumber = np.asarray(Gaussians2D[:,8], int)
         tempMGE.axi = 1
 #        tempMGE.deproject(inclin=tempMGE.Euler[1], particles=False)
 
