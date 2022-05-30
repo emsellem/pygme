@@ -1336,8 +1336,11 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
         elif Gaussians2D.size == 4 * tempMGE.nGauss :
             Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 4) 
             found2D = 1
-        elif Gaussians2D.size == 6 * tempMGE.nGauss:
-            Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 6) 
+        elif Gaussians2D.size == 5 * tempMGE.nGauss:
+            Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 5) 
+            found2D = 1
+        elif Gaussians2D.size == 9 * tempMGE.nGauss:
+            Gaussians2D = Gaussians2D.reshape(tempMGE.nGauss, 9) 
             found2D = 1
         else :
             print_msg("The provided 2D Gaussians have the wrong shape", 1)
@@ -1367,14 +1370,11 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
         tempMGE.Q2D = Gaussians2D[:,2]
         tempMGE.PAp = Gaussians2D[:,3]
         if Gaussians2D.shape[1] > 4:
-            tempMGE.ML = np.asarray(Gaussians2D[:,4], int)
+            tempMGE.ML = np.asarray(Gaussians2D[:,4], float)
         if Gaussians2D.shape[1] > 5:
-            tempMGE.kRTheta = np.asarray(Gaussians2D[:,5], int)
-        if Gaussians2D.shape[1] > 6:
-            tempMGE.kRZ = np.asarray(Gaussians2D[:,6], int)
-        if Gaussians2D.shape[1] > 7:
+            tempMGE.kRTheta = np.asarray(Gaussians2D[:,5], float)
+            tempMGE.kRZ = np.asarray(Gaussians2D[:,6], float)
             tempMGE.GaussGroupNumber = np.asarray(Gaussians2D[:,7], int)
-        if Gaussians2D.shape[1] > 8:
             tempMGE.GaussDynCompNumber = np.asarray(Gaussians2D[:,8], int)
         tempMGE.axi = 1
 #        tempMGE.deproject(inclin=tempMGE.Euler[1], particles=False)
