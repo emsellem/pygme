@@ -1224,7 +1224,7 @@ class paramMGE(object) :
         mgeout.write("## Stellar 3D Gaussians\n")
         for i in range(NGauss[0]) :
             if self.betaeps[k]:
-                mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3D[k][:6]) \
                         + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
             else:
                 mgeout.write("STARGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
@@ -1233,7 +1233,7 @@ class paramMGE(object) :
         mgeout.write("## Gas 3D Gaussians\n")
         for i in range(NGauss[1]) :
             if self.betaeps[k]:
-                mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3D[k][:6]) \
                         + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
             else:
                 mgeout.write("GASGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
@@ -1242,7 +1242,7 @@ class paramMGE(object) :
         mgeout.write("## Dark Matter 3D Gaussians\n")
         for i in range(NGauss[2]) :
             if self.betaeps[k]:
-                mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3d[k][:6]) \
+                mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f"%tuple(Gaussians3D[k][:6]) \
                         + " BETAEPS " + "%d %d \n"%tuple(Gaussians3D[k][7:]))
             else:
                 mgeout.write("HALOGAUSS3D%02d   "%(i+1) + "%8.5e %8.5f %8.5f %8.5f %8.5f %8.5f %8.5f %d %d \n"%tuple(Gaussians3D[k]))
@@ -1301,9 +1301,9 @@ def create_mge(outfilename=None, overwrite=False, outdir=None, **kwargs) :
     # Testing for betaeps
     if 'betaeps' in kwargs:
         betaeps = kwargs.pop('betaeps', np.ones(tempMGE.nGauss, dtype=int))
-        if size(betaeps) == 1:
+        if np.size(betaeps) == 1:
             betaeps = [betaeps] * tempMGE.nGauss
-        elif size(betaeps) != tempMGE.nGauss:
+        elif np.size(betaeps) != tempMGE.nGauss:
             print_msg("Provided value(s) for betaeps has the wrong shape")
             print_msg("Setting betaeps to 0 (False) for all Gaussians")
             betaeps = np.zeros(tempMGE.nGauss, dtype=int)
