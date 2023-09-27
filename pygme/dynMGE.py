@@ -386,7 +386,6 @@ class dynMGE(photMGE) :
         Return :math:`\kappa`, the epicycle radial frequency for an MGE model
 
         :param R: cylindrical radius (float or array) in arcseconds
-        :param Z: vertical height (float or array) in arcseconds
 
         :returns: :math:`\kappa` Radial Epicycle frequency [km.s-1.pc-1]
         :rtype: float or array of float depending on input
@@ -419,7 +418,7 @@ class dynMGE(photMGE) :
         return O / (2. * k)
     #===========================================================
     #######################################################
-    def QToomre(self, R, Zcut, ilist=None) :
+    def QToomre(self, R, Zcut, thickness_factor=3.36, ilist=None) :
         """ Derive the Toomre criterion
 
         :param R: cylindrical radius (float or array) in arcseconds
@@ -448,12 +447,12 @@ class dynMGE(photMGE) :
         SigmaR = sqrt(rhoSigmaR2 / rhoT)
         self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist)
         SigmaZ = sqrt(self._sigma_z2_fromR2Z2(R2,Z2, ilist)) # in km.s-1
-        SurfDensity = self._rhointMZ(R, Zcut, ilist)
+        SurfDensity = self.rhointMZ(R, Zcut, ilist)
         ## self.G in (km/s)2. Msun-1 . pc2 . arcsec-1
         ## SurfDensity in Msun.pc-2
         ## So QT in pc-1 * arcsec, so we multiply by pc_per_arcsec
-        QT = k * SigmaR * self.pc_per_arcsec / (3.36 * self.G * SurfDensity)
-        return SigmaR, SigmaZ, O, k, QT
+        QT = k * SigmaR * self.pc_per_arcsec / (thickness_factor * self.G * SurfDensity)
+        return SigmaR, SigmaZ, SurfDensity, O, k, QT
     #===========================================================
 
     #######################################################
