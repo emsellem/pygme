@@ -326,9 +326,11 @@ class dynMGE(photMGE) :
         ### Compute .rho and .rhoT the individual and total M density on the grid
         rho = np.zeros((self.nGauss, len(R2)), floatMGE)
         rhoT = np.zeros_like(R2)
-        for i in ilist :
+        for i in range(self.nGauss):
             rho[i] = self._rho3D_1G_fromR2Z2(R2, Z2, i)
-        rhoT = np.sum(rho, axis=0)
+            if i in ilist:
+                rhoT += rho[i]
+            
         return rho, rhoT
         ## WARNING: rho is in Mass/pc-2/arcsec-1
     #===========================================================
@@ -337,7 +339,7 @@ class dynMGE(photMGE) :
         T2 = T * T
         Integrand = np.zeros_like(R2)
         denom = 1. - self.e2 * T2
-        for i in ilist :
+        for i in ilist:
             Integrand += self._pParam.qParc[i] * exp(- R2 * T2 / self._dParam.dSig3Darc2_soft[i]) / sqrt(denom[i])
         return Integrand * T2
 
@@ -439,14 +441,12 @@ class dynMGE(photMGE) :
         Z2 = Z*Z
         rhoSigmaR2 = np.zeros_like(R)
         SigmaZ = np.zeros_like(R)
-        rhoT = 0.
         for i in ilist :
-            self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=[i])
-            rhoSigmaR2 += self._dParam.kRZ2[i] * self.rho[i] * self._sigma_z2_fromR2Z2(R2,Z2, ilist=[i]) # in km.s-1
-            rhoT += self.rho[i]
-        SigmaR = sqrt(rhoSigmaR2 / rhoT)
-        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist)
-        SigmaZ = sqrt(self._sigma_z2_fromR2Z2(R2,Z2, ilist)) # in km.s-1
+            rhoSigmaR2 += self._dParam.kRZ2[i] * self._rhosigma_z2_fromR2Z2(R2,Z2, ilist=[i]) # in km.s-1
+            
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
+        SigmaR = sqrt(rhoSigmaR2 / self.rhoT)
+        SigmaZ = sqrt(self._rhosigma_z2_fromR2Z2(R2,Z2, ilist) / self.rhoT) # in km.s-1
         SurfDensity = self.rhointMZ(R, Zcut, ilist)
         ## self.G in (km/s)2. Msun-1 . pc2 . arcsec-1
         ## SurfDensity in Msun.pc-2
@@ -468,6 +468,7 @@ class dynMGE(photMGE) :
         Integrand = np.zeros_like(R2)        # this has the dimension of the particules array
         denom = 1. - self.e2 * T2
         expfac = self._pParam.qParc * exp(- (R2[...,np.newaxis] + Z2[...,np.newaxis] / denom) * T2 / self._dParam.dSig3Darc2_soft) / sqrt(denom)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         for j in range(self.nGauss) :
 #         expfac = self._pParam.qParc[j] * exp(- (R2 + Z2 / denom[j]) * T2 / self._pParam.dSig3Darc2[j]) / sqrt(denom[j])
 #         Integrand = Integrand + np.sum(self.rho * self._dParam.q2Sig3Darc2 * expfac / T2Bij_soft[:,j], axis=-1)
@@ -487,6 +488,7 @@ class dynMGE(photMGE) :
 #      T2e2j = T2 * self.e2
         qParcT2 = self._pParam.qParc * T2
         expfac = qParcT2 * exp(- (R2[...,np.newaxis] + Z2[...,np.newaxis] / denom) * T2 / self._pParam.dSig3Darc2) / sqrt(denom)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         for j in range(self.nGauss) :
             for i in ilist :
 #            Integrand += self.rho[i] * (R2 * (self.e2[i] - T2e2j[j]) + self._dParam.q2Sig3Darc2[i]) * expfac[...,j] / T2Bij_soft[i,j]
@@ -496,7 +498,7 @@ class dynMGE(photMGE) :
         return Integrand
     #===========================================================
     #######################################################
-    def _sigma_z2_fromR2Z2(self, R2, Z2, ilist=None) :
+    def _rhosigma_z2_fromR2Z2(self, R2, Z2, ilist=None) :
         """
         Compute SigmaZ**2 : the second centred velocity moment from an MGE model
 
@@ -509,6 +511,7 @@ class dynMGE(photMGE) :
         r = sqrt(r2)
         r2soft = r2 + self.SoftarcMbh2
         rsoft = sqrt(r2soft)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
@@ -524,7 +527,7 @@ class dynMGE(photMGE) :
                 lasterm[~mask] = 2. / (r[~mask] + sqrt(r2[~mask] + self._dParam.qq2s2[i]))
                 sigz2 += self.rho[i] * self.facMbh * (1. / rsoft - lasterm) # in rho * M arcsec pc-2 / 4 PI G
 
-        return sigz2 * self.PIG / self.rhoT
+        return sigz2 * self.PIG
     #===========================================================
     #######################################################
     def sigma_z2(self, R, Z, ilist=None) :
@@ -543,6 +546,7 @@ class dynMGE(photMGE) :
         r = sqrt(r2)
         r2soft = r2 + self.SoftarcMbh2
         rsoft = sqrt(r2soft)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.sum(Wquad[i] * self._intsigma_z2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
@@ -581,6 +585,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         # MU2
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
@@ -616,6 +621,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         # MU2
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         VT2 = np.sum(Wquad[i] * self._intvtheta2(Xquad[i], R2, Z2, ilist=ilist) for i in range(self.Nquad))
 
         # Contribution from the BH
@@ -649,6 +655,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.zeros_like(R2)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         # sigmaz2
         for i in range(self.Nquad) :
             sigz2 += Wquad[i] * self._intsigma_z2(Xquad[i],  R2, Z2, ilist)
@@ -697,6 +704,7 @@ class dynMGE(photMGE) :
         ## Compute the mass density for individual gaussians as well as the sum
         [Xquad, Wquad] = quadrat_ps_roots(self.Nquad)
         sigz2 = np.zeros_like(R2)
+        self.rho, self.rhoT = self._MassDensity(R2, Z2, ilist=ilist)
         # sigmaz2
         for i in range(self.Nquad) :
             sigz2 += Wquad[i] * self._intsigma_z2(Xquad[i],  R2, Z2, ilist)

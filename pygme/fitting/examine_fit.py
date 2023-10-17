@@ -226,7 +226,7 @@ def plot_2dfit_residuals(x, y, data, fit, PAmin=0., PAmax=360., nSectors=8, Wedg
 
     ## Polar coordinates
     r, theta = convert_xy_to_polar(x_rav, y_rav)
-    theta = np.degrees(theta) + 180.
+    theta = np.rad2deg(theta)
 
     ## Selecting the points with respect to their sectors
     ## And sorting them out

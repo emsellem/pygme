@@ -194,14 +194,14 @@ def convert_xy_to_polar(x, y, cx=0.0, cy=0.0, PA=None) :
     Return : R, theta (in radians)
     """
     if PA is None : PA = -np.pi / 2.
-    ## If the PA does not have X along the abscissa, rotate
+    # If the PA does not have X along the abscissa, rotate
     if np.mod(PA+np.pi/2., np.pi) != 0.0 : x, y = rotxyC(x, y, cx=cx, cy=cy, angle=PA+np.pi/2.)
     else : x, y = x - cx, y - cy
 
-    ## Polar coordinates
+    # Polar coordinates
     r = np.sqrt(x**2 + y**2)
-    ## Now computing the true theta
-    theta = np.arctan2(y, x)
+    # Now computing the true theta
+    theta = np.unwrap(np.arctan2(y, x))
     return r, theta
 #-------------------------------------------------------------------------------------------------------------
 def convert_polar_to_xy(r, theta) :
